@@ -14,4 +14,18 @@ module fifo
   output [BITS-1:0] q
   );
 
+  logic [BITS-1:0] registers [0:DEPTH-1];
+
+  always_ff @(posedge clk or negedge rst_n) begin
+      if (!rst_n) begin
+        for (int i=0; i<DEPTH; i++)
+          registers[i] <= '0;
+      end else begin
+        registers[0] <= d;
+        for (int i=1; i<DEPTH; i++)
+          registers[i] <= registers[i-1];
+      end
+  end
+
+  wire q = registers[DEPTH];
 endmodule // fifo
