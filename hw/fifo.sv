@@ -19,7 +19,7 @@ module fifo #(
     for (integer i = 0; i < DEPTH; i++) begin
       if (!rst_n)
         registers[i] <= '0;
-      else
+      else if (en)
         registers[i] <= (i == 0) ? d : registers[i-1];
     end
   end
