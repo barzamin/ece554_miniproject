@@ -1,0 +1,3 @@
+#!/bin/bash
+
+vcs -timescale=1ns/10ps -debug_access+all +lint=all hw/*.sv
