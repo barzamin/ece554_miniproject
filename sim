@@ -1,3 +1,4 @@
 #!/bin/bash
 
-vcs -timescale=1ns/10ps -debug_access+all +lint=all hw/fifo.sv hw/fifo_tb.sv
+vlog -work work hw/fifo_tb.sv hw/fifo.sv
+vsim -c -do 'run -all' work.fifo_tb
