@@ -12,9 +12,9 @@ module fifo #(
   input wire [BITS-1:0] d,
   output wire [BITS-1:0] q
 );
-
   logic [BITS-1:0] registers [DEPTH-1:0];
 
+  // infers an array of chained flops. all flops stop registering their `d` when `~en`.
   always_ff @(posedge clk or negedge rst_n) begin
     for (integer i = 0; i < DEPTH; i++) begin
       if (!rst_n)
