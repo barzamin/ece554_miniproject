@@ -16,15 +16,15 @@
 // Greg Stitt
 // University of Florida
 //
-// This example demonstrates an AFU wrapper class built around the OPAE API 
+// This example demonstrates an AFU wrapper class built around the OPAE API
 // to do the following:
 // 1) request an FPGA with a specific AFU
-// 2) read and write from a memory-mapped register in the FPGA 
+// 2) read and write from a memory-mapped register in the FPGA
+
+#include <opae/utils.h>
 
 #include <cstdlib>
 #include <iostream>
-
-#include <opae/utils.h>
 
 #include "AFU.h"
 
@@ -43,57 +43,51 @@ using namespace std;
 //=========================================================
 #define USER_REG_ADDR 0x0020
 
-
 int main(int argc, char *argv[]) {
-
   try {
-    // Create an AFU object to provide basic services for the FPGA. The 
+    // Create an AFU object to provide basic services for the FPGA. The
     // constructor searchers available FPGAs for one with an AFU with the
     // the specified ID
     AFU afu(AFU_ACCEL_UUID);
-    
+
     // Test 100 different writes and reads to the user MMIO register.
-    unsigned errors = 0;
-    for (uint64_t i=0; i < 100; i++) {
+    size_t errors = 0;
+    for (uint64_t i = 0; i < 100; i++) {
       afu.write(USER_REG_ADDR, i);
       uint64_t result = afu.read(USER_REG_ADDR);
 
-      if (result != i) {
-	cerr << "ERROR: Read from MMIO register has incorrect value " << result << " instead of " << i << endl;
-	errors ++;
+      uint64_t expected = (i<8) ? 0 : i - 7; // clamp for initially empty buffer 
+      if (result != expected) {
+        cerr << "ERROR: Read from MMIO register has incorrect value " << result
+             << " instead of " << expected << endl;
+        errors++;
       }
     }
 
     if (errors == 0) {
       cout << "All MMIO tests succeeded." << endl;
       return EXIT_SUCCESS;
-    }
-    else {
+    } else {
       cout << "MMIO tests failed." << endl;
       return EXIT_FAILURE;
     }
   }
-  // Exception handling for all the runtime errors that can occur within 
+  // Exception handling for all the runtime errors that can occur within
   // the AFU wrapper class.
-  catch (const fpga_result& e) {    
-    
+  catch (const fpga_result &e) {
     // Provide more meaningful error messages for each exception.
     if (e == FPGA_BUSY) {
       cerr << "ERROR: All FPGAs busy." << endl;
-    }
-    else if (e == FPGA_NOT_FOUND) { 
-      cerr << "ERROR: FPGA with accelerator " << AFU_ACCEL_UUID 
-	   << " not found." << endl;
-    }
-    else {
+    } else if (e == FPGA_NOT_FOUND) {
+      cerr << "ERROR: FPGA with accelerator " << AFU_ACCEL_UUID << " not found."
+           << endl;
+    } else {
       // Print the default error string for the remaining fpga_result types.
-      cerr << "ERROR: " << fpgaErrStr(e) << endl;    
+      cerr << "ERROR: " << fpgaErrStr(e) << endl;
     }
-  }
-  catch (const runtime_error& e) {    
+  } catch (const runtime_error &e) {
     cerr << e.what() << endl;
-  }
-  catch (const opae::fpga::types::no_driver& e) {
+  } catch (const opae::fpga::types::no_driver &e) {
     cerr << "ERROR: No FPGA driver found." << endl;
   }
 
