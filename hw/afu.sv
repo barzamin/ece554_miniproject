@@ -63,13 +63,13 @@ logic [127:0] afu_id = `AFU_ACCEL_UUID;
 
 // User FIFO (mapped to h0020).
 logic user_fifo_en;
-logic user_fifo_q;
+logic [63:0] user_fifo_q;
 fifo user_fifo(
   .clk  (clk),
   .rst_n(rst_n),
   .en   (user_fifo_en),
   .d    (rx.c0.data[63:0]), // this always ingests from rx.c0.data, but `en` only when CCIP touching 0x0020.
-  .q    (user_fifo_q),
+  .q    (user_fifo_q)
 );
 
 // The Rx c0 header is normally used for responses to reads from the host processor's memory.
