@@ -83,13 +83,13 @@ assign mmio_hdr = t_ccip_c0_ReqMmioHdr'(rx.c0.hdr);
 // MMIO write code
 // =============================================================//
 always_comb begin
-  user_fifo_en <= 0;
+  user_fifo_en = 0;
   // Check to see if there is a valid write being received from the processor.
   if (rx.c0.mmioWrValid == 1) begin
     // Check the address of the write request. If it maches the address of the
     // memory-mapped FIFO (h0020), then enable the FIFO.
     case (mmio_hdr.address)
-      16'h0020: user_fifo_en <= 1;
+      16'h0020: user_fifo_en = 1;
     endcase
   end
 end
