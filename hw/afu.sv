@@ -66,7 +66,7 @@ logic user_fifo_en;
 logic [63:0] user_fifo_q;
 fifo user_fifo(
   .clk  (clk),
-  .rst_n(rst_n),
+  .rst_n(~rst),
   .en   (user_fifo_en),
   .d    (rx.c0.data[63:0]), // this always ingests from rx.c0.data, but `en` only when CCIP touching 0x0020.
   .q    (user_fifo_q)
