@@ -1,4 +1,4 @@
 #!/bin/bash
 
-vlog -work work hw/fifo_tb.sv hw/fifo.sv
-vsim -c -do 'run -all' work.fifo_tb
+vlog -work work hw/tpumac.sv hw/tpumac_tb.sv
+vsim -voptargs=+acc -c -do 'run -all' work.tpumac_tb

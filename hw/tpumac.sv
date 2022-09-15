@@ -1,3 +1,4 @@
+`default_nettype none
 module tpumac #(
   parameter int BITS_AB = 8,
   parameter int BITS_C = 16 // n.b.: BITS_C should be BITS_AB*2. could do an `initial assert`; shame SV lacks a static_assert.
@@ -12,7 +13,7 @@ module tpumac #(
 
   output reg signed [BITS_AB-1:0] Aout,
   output reg signed [BITS_AB-1:0] Bout,
-  output reg signed [BITS_C-1:0] Cout
+  output reg signed [BITS_C-1:0]  Cout
 );
 
   // Aout, Bout registers
