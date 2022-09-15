@@ -23,6 +23,8 @@ class c:
 
 TOOLS = {
     'vcs': 'vcs',
+    'vlog': 'vlog',
+    'vsim': 'vsim',
 }
 
 basedir = Path(__file__).parent.resolve()
@@ -32,6 +34,7 @@ workdir = basedir / 'xwork'
 TESTBENCHES = {
     'tpumac': {
         'files': ['tpumac.sv', 'tpumac_tb.sv'],
+        'top': 'tpumac_tb',
     },
 }
 
@@ -62,6 +65,31 @@ def vcs_run_tb(name, desc):
     ]
     subprocess.run(cmd, check=True)
     print(f'running simv... {c.OKGREEN}DONE{c.RESET}')
+
+def questa_run_tb(name, desc):
+    work = workdir / 'questa' / 'work'
+    work.mkdir(parents=True, exist_ok=True)
+
+    print(f'running vlog...')
+    cmd = [
+        TOOLS['vlog'],
+        '-work', str(work),
+        '-timescale=1ns/10ps',
+    ]
+    cmd.extend([str(hwdir / fname) for fname in desc['files']])
+    subprocess.run(cmd, check=True)
+    print(f'running vlog... {c.OKBLUE}DONE{c.RESET}')
+
+    print(f'running vsim...')
+    cmd = [
+        TOOLS['vsim'],
+        '-work', str(work),
+        '-vopt', '-voptargs=+acc',
+        '-c', '-do', 'run -all',
+        f"work.{desc['top']}",
+    ]
+    subprocess.run(cmd, check=True)
+    print(f'running vsim... {c.OKGREEN}DONE{c.RESET}')
 
 def test(args):
     for testbench in args.testbench:
