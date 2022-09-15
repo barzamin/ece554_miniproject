@@ -39,7 +39,9 @@ def vcs_run_tb(name, desc):
     print(f'{c.HEADER}== running tb {name} {c.BOLD}[VCS]{c.RESET}{c.HEADER} =={c.RESET}')
     vcs_workdir = workdir/'vcs'/name
     vcs_workdir.mkdir(parents=True, exist_ok=True)
-    vsim_bin = vcs_workdir/'vsim'
+    simv_bin = vcs_workdir/'simv'
+
+    print(f'building simv...')
 
     cmd = [
         TOOLS['vcs'],
@@ -48,14 +50,25 @@ def vcs_run_tb(name, desc):
         '-debug_access+all',
         '-sverilog',
         '+lint=all',
-        '-o', str(vsim_bin),
+        '-o', str(simv_bin),
     ]
     cmd.extend([str(hwdir / fname) for fname in desc['files']])
     subprocess.run(cmd, check=True)
+    print(f'building simv... {c.OKBLUE}DONE{c.RESET}')
+
+    print(f'running simv...')
+    cmd = [
+        str(simv_bin),
+    ]
+    subprocess.run(cmd, check=True)
+    print(f'running simv... {c.OKGREEN}DONE{c.RESET}')
 
 def test(args):
     for testbench in args.testbench:
-        vcs_run_tb(testbench, TESTBENCHES[testbench])
+        if args.simulator == 'vcs':
+            vcs_run_tb(testbench, TESTBENCHES[testbench])
+        elif args.simulator == 'questa':
+            questa_run_tb(testbench, TESTBENCHES[testbench])
 
 def main():
     parser = argparse.ArgumentParser(description='ad hoc lil buildsystem :>')
@@ -64,8 +77,12 @@ def main():
                                        dest='command')
     subparsers.required = True
 
-    parser_tests = subparsers.add_parser('test')
+    parser_tests = subparsers.add_parser('test', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser_tests.add_argument('testbench', metavar='TESTBENCH', nargs='+')
+    parser_tests.add_argument('-s', '--simulator',
+        choices=['vcs', 'questa'],
+        default='vcs',
+        help='simulator used to run testbench')
     parser_tests.set_defaults(func=test)
 
     args = parser.parse_args()
