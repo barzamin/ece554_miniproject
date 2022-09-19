@@ -67,7 +67,7 @@ module tpumac_tb();
       @(negedge clk) assert(Cout == golden_Cout);
     end
 
-    // -- check that we don't register anything if en is low
+    // -- check that we don't register anything if en and WrEn are low
     assert(std::randomize(Ain, Bin, Cin));
     Ain_prev = Ain; Bin_prev = Bin; Cin_prev = Cin;
     WrEn = '1; en = '1; // write
@@ -87,6 +87,16 @@ module tpumac_tb();
     assert(Aout == Ain_prev);
     assert(Bout == Bin_prev);
     assert(Cout == Cin_prev);
+
+    // now try lifting WrEn
+    assert(std::randomize(Ain, Bin, Cin));
+    WrEn = '1; en = '0;
+    @(posedge clk);
+    @(negedge clk);
+    // should still be the same except for Cout
+    assert(Aout == Ain_prev);
+    assert(Bout == Bin_prev);
+    assert(Cout == Cin);
 
 
     // -- check that rst_n resets registers properly

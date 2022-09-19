@@ -42,7 +42,7 @@ module tpumac #(
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       Cout <= '0;
-    end else if (en) begin
+    end else if (en || WrEn) begin
       // when WrEn, we're loading a new value of C
       Cout <= WrEn ? Cin : A_mul_B_plus_Cout;
     end
