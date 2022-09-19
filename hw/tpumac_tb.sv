@@ -88,6 +88,14 @@ module tpumac_tb();
     assert(Bout == Bin_prev);
     assert(Cout == Cin_prev);
 
+
+    // -- check that rst_n resets registers properly
+    en = '0; WrEn = '0; rst_n = '0;
+    @(posedge clk);
+    @(negedge clk); rst_n = '1;
+    assert(Aout == '0);
+    assert(Bout == '0);
+    assert(Cout == '0);
     $finish();
   end
 endmodule
