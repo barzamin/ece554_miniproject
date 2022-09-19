@@ -25,6 +25,7 @@ TOOLS = {
     'vcs': 'vcs',
     'vlog': 'vlog',
     'vsim': 'vsim',
+    'vcover': 'vcover',
 }
 
 basedir = Path(__file__).parent.resolve()
@@ -112,6 +113,22 @@ def test(args):
         elif args.simulator == 'questa':
             questa_run_tb(testbench, TESTBENCHES[testbench], record_coverage=args.cover)
 
+def questa_cover(args):
+    print(f'merging coverage databases...')
+
+    # TODO
+    ucdb_out = workdir / 'questa' / 'coverout.ucdb'
+    coverstore = workdir / 'questa' / 'coverstore'
+
+    cmd = [
+        TOOLS['vcover'],
+        'merge',
+        '-out', str(ucdb_out),
+        f"'{str(coverstore)}':{','.join(args.testbench)}"
+    ]
+    subprocess.run(cmd, check=True)
+    print(f'merging coverage databases... {c.OKGREEN}DONE{c.RESET}')
+
 def main():
     parser = argparse.ArgumentParser(description='ad hoc lil buildsystem :>')
     subparsers = parser.add_subparsers(title='subcommands',
@@ -127,6 +144,10 @@ def main():
         help='simulator used to run testbench')
     parser_tests.add_argument('-c', '--cover', action='store_true', help='collect coverage data')
     parser_tests.set_defaults(func=test)
+
+    parser_questa_cover = subparsers.add_parser('questa-cover', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser_questa_cover.add_argument('testbench', metavar='TESTBENCH', nargs='+')
+    parser_questa_cover.set_defaults(func=questa_cover)
 
     args = parser.parse_args()
     args.func(args)
