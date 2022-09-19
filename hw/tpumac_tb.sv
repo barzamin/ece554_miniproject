@@ -1,15 +1,22 @@
 `default_nettype none
 module tpumac_tb();
+  localparam WIDTH_AB = 8;
+  localparam WIDTH_C = 16;
+
   logic clk, rst_n;
   logic en, WrEn;
 
-  logic signed [7:0] Ain;
-  logic signed [7:0] Bin;
-  logic signed [15:0] Cin;
+  logic signed [WIDTH_AB-1:0] Ain;
+  logic signed [WIDTH_AB-1:0] Bin;
+  logic signed [WIDTH_C-1:0] Cin;
 
-  logic signed [7:0] Aout;
-  logic signed [7:0] Bout;
-  logic signed [15:0] Cout;
+  logic signed [WIDTH_AB-1:0] Ain_prev;
+  logic signed [WIDTH_AB-1:0] Bin_prev;
+  logic signed [WIDTH_C-1:0] Cin_prev;
+
+  logic signed [WIDTH_AB-1:0] Aout;
+  logic signed [WIDTH_AB-1:0] Bout;
+  logic signed [WIDTH_C-1:0] Cout;
 
   // DUT
   tpumac #(.BITS_AB(8), .BITS_C(16)) dut (
@@ -29,7 +36,7 @@ module tpumac_tb();
   initial clk = 0;
   always #5 clk = ~clk;
 
-  logic signed [15:0] golden_Cout;
+  logic signed [WIDTH_C-1:0] golden_Cout;
   initial begin
     // clear everything out
     en = '0;
@@ -38,7 +45,7 @@ module tpumac_tb();
     @(posedge clk);
     @(negedge clk); rst_n = '1;
 
-    // first, let's do randomized testing
+    // -- first, let's do randomized testing
     for (int i = 0; i < 20; i++) begin
       assert(std::randomize(Ain, Bin, Cin));
       golden_Cout = Ain * Bin + Cin;
@@ -59,6 +66,27 @@ module tpumac_tb();
       // check MAC result latched
       @(negedge clk) assert(Cout == golden_Cout);
     end
+
+    // -- check that we don't register anything if en is low
+    assert(std::randomize(Ain, Bin, Cin));
+    Ain_prev = Ain; Bin_prev = Bin; Cin_prev = Cin;
+    WrEn = '1; en = '1; // write
+    @(posedge clk);
+    // check write
+    @(negedge clk);
+    assert(Aout == Ain);
+    assert(Bout == Bin);
+    assert(Cout == Cin);
+
+    // reroll but *don't* write
+    assert(std::randomize(Ain, Bin, Cin));
+    WrEn = '0; en = '0;
+    @(posedge clk);
+    @(negedge clk);
+    // should still be the same as write
+    assert(Aout == Ain_prev);
+    assert(Bout == Bin_prev);
+    assert(Cout == Cin_prev);
 
     $finish();
   end
