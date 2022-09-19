@@ -143,7 +143,7 @@ def questa_cover(args):
     cmd = [
         'merge',
         '-out', str(ucdb_out),
-        f"'{str(coverstore)}':{','.join(args.testbench)}"
+        f"{str(coverstore)}:{','.join(args.testbench)}"
     ]
     run_tool(TOOLS['vcover'], cmd)
     print(f'merging coverage databases... {c.OKGREEN}DONE{c.RESET}')
