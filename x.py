@@ -21,12 +21,38 @@ class c:
     UNDERLINE = '\033[4m'
 
 
-TOOLS = {
-    'vcs': 'vcs',
-    'vlog': 'vlog',
-    'vsim': 'vsim',
-    'vcover': 'vcover',
+QUESTA_BIN = Path('/cae/apps/data/mentor-2022/questasim/bin')
+QUESTA_ENV = {
+    'MGC_AMS_HOME': '/cae/apps/data/mentor-2022',
+    'LM_LICENSE_FILE': '1717@mentor.license.cae.wisc.edu',
+    'CALIBRE_SKIP_OS_CHECKS': '1',
+    'USE_CALIBRE_VCO': 'aoi',
+    'PATH': os.getenv('PATH'),
 }
+
+TOOLS = {
+    'vcs': {
+        'bin': 'vcs',
+    },
+    'vlog': {
+        'bin': QUESTA_BIN/'vlog',
+        'env': QUESTA_ENV,
+    },
+    'vsim': {
+        'bin': QUESTA_BIN/'vsim',
+        'env': QUESTA_ENV,
+    },
+    'vcover': {
+        'bin': QUESTA_BIN/'vcover',
+        'env': QUESTA_ENV,
+    },
+}
+
+def run_tool(tool, cmdargs, **kwargs):
+    return subprocess.run([tool['bin']] + cmdargs,
+        env=tool.get('env'),
+        check=True,
+        **kwargs)
 
 basedir = Path(__file__).parent.resolve()
 hwdir = basedir / 'hw'
@@ -48,7 +74,6 @@ def vcs_run_tb(name, desc):
     print(f'building simv...')
 
     cmd = [
-        TOOLS['vcs'],
         '-full64',
         '-timescale=1ns/10ps',
         '-debug_access+all',
@@ -57,14 +82,11 @@ def vcs_run_tb(name, desc):
         '-o', str(simv_bin),
     ]
     cmd += [str(hwdir / fname) for fname in desc['files']]
-    subprocess.run(cmd, check=True)
+    run_tool(TOOLS['vcs'], cmd)
     print(f'building simv... {c.OKBLUE}DONE{c.RESET}')
 
     print(f'running simv...')
-    cmd = [
-        str(simv_bin),
-    ]
-    subprocess.run(cmd, check=True)
+    run_tool(TOOLS['simv'], [])
     print(f'running simv... {c.OKGREEN}DONE{c.RESET}')
 
 def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
@@ -74,7 +96,6 @@ def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
 
     print(f'running vlog...')
     cmd = [
-        TOOLS['vlog'],
         '-work', str(work),
         '-timescale=1ns/10ps',
     ]
@@ -84,12 +105,11 @@ def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
         cmd += ['+cover=bcestf', '-coveropt', '3']
 
     cmd += [str(hwdir / fname) for fname in desc['files']]
-    subprocess.run(cmd, check=True)
+    run_tool(TOOLS['vlog'], cmd)
     print(f'running vlog... {c.OKBLUE}DONE{c.RESET}')
 
     print(f'running vsim...')
     cmd = [
-        TOOLS['vsim'],
         '-work', str(work),
         '-vopt', '-voptargs=+acc',
         '-c', '-do', 'run -all',
@@ -103,7 +123,7 @@ def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
             '-testname', name,
         ]
 
-    subprocess.run(cmd, check=True)
+    run_tool(TOOLS['vsim'], cmd)
     print(f'running vsim... {c.OKGREEN}DONE{c.RESET}')
 
 def test(args):
@@ -121,12 +141,11 @@ def questa_cover(args):
     coverstore = workdir / 'questa' / 'coverstore'
 
     cmd = [
-        TOOLS['vcover'],
         'merge',
         '-out', str(ucdb_out),
         f"'{str(coverstore)}':{','.join(args.testbench)}"
     ]
-    subprocess.run(cmd, check=True)
+    run_tool(TOOLS['vcover'], cmd)
     print(f'merging coverage databases... {c.OKGREEN}DONE{c.RESET}')
 
 def main():
