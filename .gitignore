@@ -6,3 +6,8 @@ simv.daidir/
 transcript
 ucli.key
 csrc/
+
+reports/*/_minted*
+reports/*/*.aux
+reports/*/*.log
+reports/*/*.synctex.gz

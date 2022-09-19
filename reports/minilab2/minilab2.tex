@@ -1,0 +1,40 @@
+% !TEX options=--shell-escape
+\documentclass{article}
+\usepackage{minted}
+
+\title{Minilab 2: Report}
+\author{Erin Moon \texttt{<limarshall@wisc.edu>}}
+
+\begin{document}
+\maketitle
+We were tasked with implementing a registered MAC, specified in the Minilab 2 slides. My implementation is extremely rudimentary; the datapath is expressed directly with SV signed arithmetic, and we simply hope the synthesizer does a good job for us. I did, however, split out individual intermediate products such that it would be easier to replace arithmetic with direct DSP instantiations or other FPGA-specific magic.
+
+
+The state space of the MAC is given, ignoring sequential logic, by \(\mathcal{S} = \{0,1\}^{\texttt{WIDTH\_AB}} \times \{0,1\}^{\texttt{WIDTH\_AB}} \times \{0,1\}^{\texttt{WIDTH\_C}}\), with \[\mathrm{card}\ \mathcal{S} = 2^{2(\texttt{WIDTH\_AB}) + \texttt{WIDTH\_C}} = 2^{32}\] (for default parameters). While this is exhaustively enumerable in test, it is not particularly performant to do so, especially as MAC size increases; moreover, we don't need to know that \emph{multiplication} works, as much as we need to know the sequential behavior of the unit is correct.
+
+As such, my test plan has three main phases. First, I run a small number of randomized test vectors (\(\sim 2^8\)) through the MAC to test arithmetic, with all registers enabled; the \texttt{WrEn} mux is also tested. Secondly, I test disabling registers by deasserting \texttt{en} in a single case; and lastly, I test that an in-operation deassertion of \texttt{rst\_n} resets all registers to the zero vector. Note that all checks are made via SystemVerilog assertions, rather than manual "self-checking" testbench error tracking.
+
+Running vsim against \texttt{tpumac.sv}, \texttt{tpumac\_tb.sv} produces no errors, warnings, nor assertions. I recorded coverage via \texttt{+cover=bcestf} passed to Questa \texttt{vlog} and \texttt{-coverage -coverstore ...} passed to \texttt{vsim}, merged the coverstore to a UCDB with \texttt{vcover}, and obtained an overall functional coverage on the DUT of
+\begin{minted}[breaklines]{text}
+λ ~/ece554/ece554_miniproject tux-134
+» /cae/apps/data/mentor-2022/questasim/bin/vcover report -assert -code bcestf -annotate -instance='/tpumac_tb/dut' xwork/questa/coverout.ucdb
+QuestaSim vcover 2021.2_2 Coverage Utility 2021.06 Jun 19 2021
+Start time: 23:42:11 on Sep 18,2022
+vcover report -assert -code bcestf -annotate -instance=/tpumac_tb/dut xwork/questa/coverout.ucdb
+Coverage Report Summary Data by instance
+
+=================================================================================
+=== Instance: /tpumac_tb/dut
+=== Design Unit: work.tpumac
+=================================================================================
+    Enabled Coverage  Bins Hits Misses  Coverage
+    ----------------  ---- ---- ------  --------
+    Branches             8    8      0   100.00%
+    Statements          10   10      0   100.00%
+    Toggles            200  200      0   100.00%
+
+
+Total Coverage By Instance (filtered view): 100.00%
+\end{minted}
+
+\end{document}
