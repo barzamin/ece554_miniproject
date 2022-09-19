@@ -65,6 +65,7 @@ TESTBENCHES = {
     },
     'systolic_array': {
         'files': ['systolic_array.sv', 'systolic_array_tb.sv'],
+        'top': 'systolic_array_tb',
     },
 }
 
