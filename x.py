@@ -55,7 +55,7 @@ def vcs_run_tb(name, desc):
         '+lint=all',
         '-o', str(simv_bin),
     ]
-    cmd.extend([str(hwdir / fname) for fname in desc['files']])
+    cmd += [str(hwdir / fname) for fname in desc['files']]
     subprocess.run(cmd, check=True)
     print(f'building simv... {c.OKBLUE}DONE{c.RESET}')
 
@@ -66,8 +66,9 @@ def vcs_run_tb(name, desc):
     subprocess.run(cmd, check=True)
     print(f'running simv... {c.OKGREEN}DONE{c.RESET}')
 
-def questa_run_tb(name, desc):
+def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
     work = workdir / 'questa' / 'work'
+    coverstore = coverstore or workdir / 'questa' / 'coverstore'
     work.mkdir(parents=True, exist_ok=True)
 
     print(f'running vlog...')
@@ -76,7 +77,12 @@ def questa_run_tb(name, desc):
         '-work', str(work),
         '-timescale=1ns/10ps',
     ]
-    cmd.extend([str(hwdir / fname) for fname in desc['files']])
+
+    if record_coverage:
+        print(f'{c.WARNING}building with coverage recording enabled{c.RESET}')
+        cmd += ['+cover=bcestf', '-coveropt', '3']
+
+    cmd += [str(hwdir / fname) for fname in desc['files']]
     subprocess.run(cmd, check=True)
     print(f'running vlog... {c.OKBLUE}DONE{c.RESET}')
 
@@ -88,6 +94,14 @@ def questa_run_tb(name, desc):
         '-c', '-do', 'run -all',
         f"work.{desc['top']}",
     ]
+    if record_coverage:
+        print(f'{c.WARNING}running with coverage recording enabled{c.RESET}')
+        cmd += [
+            '-coverage',
+            '-coverstore', str(coverstore),
+            '-testname', name,
+        ]
+
     subprocess.run(cmd, check=True)
     print(f'running vsim... {c.OKGREEN}DONE{c.RESET}')
 
@@ -96,7 +110,7 @@ def test(args):
         if args.simulator == 'vcs':
             vcs_run_tb(testbench, TESTBENCHES[testbench])
         elif args.simulator == 'questa':
-            questa_run_tb(testbench, TESTBENCHES[testbench])
+            questa_run_tb(testbench, TESTBENCHES[testbench], record_coverage=args.cover)
 
 def main():
     parser = argparse.ArgumentParser(description='ad hoc lil buildsystem :>')
@@ -111,6 +125,7 @@ def main():
         choices=['vcs', 'questa'],
         default='vcs',
         help='simulator used to run testbench')
+    parser_tests.add_argument('-c', '--cover', action='store_true', help='collect coverage data')
     parser_tests.set_defaults(func=test)
 
     args = parser.parse_args()
