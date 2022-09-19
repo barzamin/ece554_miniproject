@@ -46,7 +46,7 @@ module tpumac_tb();
     @(negedge clk); rst_n = '1;
 
     // -- first, let's do randomized testing
-    for (int i = 0; i < 20; i++) begin
+    for (int i = 0; i < 256; i++) begin
       assert(std::randomize(Ain, Bin, Cin));
       golden_Cout = Ain * Bin + Cin;
       $display("Ain=%0d, Bin=%0d, Cin=%0d; golden Cout=%0d", Ain, Bin, Cin, golden_Cout);
