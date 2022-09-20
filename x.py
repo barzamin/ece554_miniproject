@@ -59,6 +59,10 @@ hwdir = basedir / 'hw'
 workdir = basedir / 'xwork'
 
 TESTBENCHES = {
+    'fifo': {
+        'files': ['fifo.sv', 'fifo_tb.sv'],
+        'top': 'fifo_tb',
+    },
     'tpumac': {
         'files': ['tpumac.sv', 'tpumac_tb.sv'],
         'top': 'tpumac_tb',
