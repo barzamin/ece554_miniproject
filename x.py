@@ -91,7 +91,10 @@ def vcs_run_tb(name, desc):
     print(f'building simv... {c.OKBLUE}DONE{c.RESET}')
 
     print(f'running simv...')
-    run_tool(TOOLS['simv'], ['-full64'])
+    cmd = [
+        str(simv_bin),
+    ]
+    subprocess.run(cmd, check=True)
     print(f'running simv... {c.OKGREEN}DONE{c.RESET}')
 
 def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
