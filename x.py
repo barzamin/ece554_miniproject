@@ -124,6 +124,7 @@ def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
     cmd = [
         '-work', str(work),
         '-vopt', '-voptargs=+acc',
+        '-logfile', str(workdir / 'questa' / f"{desc['top']}.log"),
         '-c', '-do', 'run -all',
         f"work.{desc['top']}",
     ]
