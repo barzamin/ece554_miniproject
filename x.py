@@ -82,6 +82,7 @@ def vcs_run_tb(name, desc):
         '-timescale=1ns/10ps',
         '-debug_access+all',
         '-sverilog',
+        f'+incdir+{str(hwdir)}',
         '+lint=all',
         '-o', str(simv_bin),
     ]
@@ -90,7 +91,7 @@ def vcs_run_tb(name, desc):
     print(f'building simv... {c.OKBLUE}DONE{c.RESET}')
 
     print(f'running simv...')
-    run_tool(TOOLS['simv'], [])
+    run_tool(TOOLS['simv'], ['-full64'])
     print(f'running simv... {c.OKGREEN}DONE{c.RESET}')
 
 def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
