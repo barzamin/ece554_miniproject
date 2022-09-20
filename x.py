@@ -167,7 +167,7 @@ def main():
     parser_tests.add_argument('testbench', metavar='TESTBENCH', nargs='+')
     parser_tests.add_argument('-s', '--simulator',
         choices=['vcs', 'questa'],
-        default='vcs',
+        default='questa',
         help='simulator used to run testbench')
     parser_tests.add_argument('-c', '--cover', action='store_true', help='collect coverage data')
     parser_tests.set_defaults(func=test)
