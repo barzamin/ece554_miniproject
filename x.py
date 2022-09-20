@@ -64,7 +64,7 @@ TESTBENCHES = {
         'top': 'tpumac_tb',
     },
     'systolic_array': {
-        'files': ['systolic_array.sv', 'systolic_array_tb.sv'],
+        'files': ['tpumac.sv', 'systolic_array.sv', 'systolic_array_tb.sv'],
         'top': 'systolic_array_tb',
     },
 }
