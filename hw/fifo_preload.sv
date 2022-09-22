@@ -7,9 +7,9 @@ module fifo_preload #(
   parameter int DEPTH=8,
   parameter int BITS=8
 ) (
-  input logic clk,rst_n,en, wr,
-  input logic signed [BITS-1:0] d [DEPTH-1:0],
-  output logic signed  [BITS-1:0] q
+  input wire clk,rst_n,en, wr,
+  input wire signed [BITS-1:0] d [DEPTH-1:0],
+  output wire signed  [BITS-1:0] q
 );
   
   logic signed [BITS-1:0] registers [DEPTH-1:0];
