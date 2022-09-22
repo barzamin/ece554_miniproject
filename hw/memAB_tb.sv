@@ -78,18 +78,6 @@ module memAB_tb();
 
   satc = new();
 
-  //write in A values
-
-WrEnMemA = 1'b1;
-
-    for(int row = 0; row < DIM; ++row) begin
-      Ain = satc.A[row];
-      Arow = {row[ROWBITS-1:0]};
-      @(posedge clk);
-    end
-
-WrEnMemA = 1'b0;
-
 en = 1'b1;
 
     for(int cycles = 0; cycles < (DIM*3); ++cycles) begin
@@ -97,9 +85,13 @@ en = 1'b1;
       // sets the Bin and Ain signals
     if(cycles<DIM) begin
     Bin = satc.B[cycles];
+    Ain = satc.A[cycles];
+    Arow = {cycles[ROWBITS-1:0]};
+    WrEnMemA = 1'b1;
     end
 
     if(cycles>=DIM) begin
+      WrEnMemA = 1'b0;
       for(int col=0;col<DIM;++col) begin
          Bin[col] = {BITS_AB{1'b0}};
        end
@@ -171,6 +163,8 @@ en = 1'b0;
   if(error == 1'b0) begin
     $display("YAHOO!!! All tests passed.");
   end
+
+$finish();
 
 end
 
