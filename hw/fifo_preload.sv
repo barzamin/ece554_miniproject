@@ -1,4 +1,3 @@
-`default_nettype none
 // fifo.sv
 // Implements delay buffer (fifo)
 // On reset all entries are set to 0
@@ -8,12 +7,12 @@ module fifo_preload #(
   parameter int DEPTH=8,
   parameter int BITS=8
 ) (
-  input wire clk,rst_n,en, wr,
-  input wire [BITS-1:0] d [DEPTH-1:0],
-  output wire [BITS-1:0] q
+  input logic clk,rst_n,en, wr,
+  input logic signed [BITS-1:0] d [DEPTH-1:0],
+  output logic signed  [BITS-1:0] q
 );
   
-  logic [BITS-1:0] registers [DEPTH-1:0];
+  logic signed [BITS-1:0] registers [DEPTH-1:0];
 
   // infers an array of chained flops. all flops stop registering their `d` when `~en`.
   always_ff @(posedge clk or negedge rst_n) begin
@@ -24,7 +23,7 @@ module fifo_preload #(
         registers <= d;
       else if(en)
         registers[i] <= (i == DEPTH-1) ? 0 : registers[i+1];
-
+    end
   end
 
   assign q = registers[0];
