@@ -9,4 +9,13 @@ module memA #(
   output logic signed [BITS_AB-1:0] Aout [DIM-1:0]
 );
 
+assign write_enable = {7'b0, WrEn} << Crow;
+
+logic [BITS_AB-1:0] outs [DIM-1:0];
+
+fifo_preload [DIM-1:0] fifos(.clk(clk), .rst_n(rst_n), .en(en), .wr(write_enable), .d(Ain), .q(outs))
+  
+  
+
+
 endmodule // memA
