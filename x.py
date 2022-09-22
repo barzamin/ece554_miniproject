@@ -71,6 +71,10 @@ TESTBENCHES = {
         'files': ['tpumac.sv', 'systolic_array.sv', 'systolic_array_tb.sv'],
         'top': 'systolic_array_tb',
     },
+    'memAB': {
+        'files': ['memA.sv', 'memB.sv', 'fifo.sv', 'fifo_preload.sv', 'memAB_tb.sv'],
+        'top': 'memAB_tb',
+    }
 }
 
 def vcs_run_tb(name, desc):
