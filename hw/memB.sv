@@ -11,7 +11,7 @@ module memB #(
   generate
     for (col_idx = 0; col_idx < DIM; col_idx++) begin : col_fifos
       fifo #(
-        .DEPTH(DIM+col_idx),
+        .DEPTH(col_idx + 1),
         .BITS (BITS_AB)
       ) col_fifo (
         .clk  (clk),
