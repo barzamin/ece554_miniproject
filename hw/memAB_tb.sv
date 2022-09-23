@@ -38,7 +38,7 @@ module memAB_tb();
 
   initial begin
   clk = 1'b0;
-  rst_n = 1'b1;
+  rst_n = 1'b0;
   en = 1'b0;
   WrEn = 1'b0;
   WrEnMemA = 1'b0;
@@ -51,7 +51,7 @@ module memAB_tb();
   error = 1'b0;
   @(posedge clk);
   @(posedge clk);
-  rst_n = 1'b0;
+  rst_n = 1'b1;
   @(posedge clk);
   
   // checking that memA and memB are all zero Bin and Ain are zero
@@ -97,20 +97,29 @@ en = 1'b1;
        end
     end
 
+
+  
     // checks that the Aout and Bout values from memA and memB are correct
+    
+    if(cycles > 0) begin
+    @(negedge clk);
     for(int col = 0; col<DIM; ++col) begin
         if(Bout[col] != satc.get_next_B(col)) begin
+            Bcheck[col] = satc.get_next_B(col);
             $display("problem with memB, mismatch with testcase");
             error = 1'b1;
           end
         if(Aout[col] != satc.get_next_A(col)) begin
+            Acheck[col] = satc.get_next_A(col);
             $display("problem with memA, mismatch with testcase");
         end
      end
-
+    mycycle = satc.next_cycle();  
+    end
 
     @(posedge clk);
-    mycycle = satc.next_cycle();    
+    
+  
 
    end
 
@@ -122,7 +131,7 @@ en = 1'b0;
          for(int Row=0;Row<DIM;++Row) begin
            Crow = {Row[ROWBITS-1:0]};
            @(posedge clk) begin end
-           if(satc.check_row_C(Row,Cout) == 1) begin
+           if(satc.check_row_C(Row,Cout) != 0) begin
                $display("error was found checking C values");
                error = 1'b1;
                cerror = 1'b1;
