@@ -52,10 +52,10 @@ class systolic_array_tc #(parameter BITS_AB=8,
    endfunction:get_next_A
 
    // this returns B entries in parallelogram format
-   function bit signed [BITS_AB-1:0] get_next_B(int Col);
+   function logic signed [BITS_AB-1:0] get_next_B(int Col);
       int col_start = Col;
       int col_stop = Col + DIM - 1;
-      bit signed [BITS_AB-1:0] retval =  {BITS_AB{1'b0}};
+      logic signed [BITS_AB-1:0] retval =  {BITS_AB{1'b0}};
       if ((cycle >= col_start) && (cycle <= col_stop)) begin
          retval =  B[cycle-col_start][Col];
       end
@@ -98,3 +98,4 @@ class systolic_array_tc #(parameter BITS_AB=8,
    endfunction: dump // dump
    
 endclass; // systolic_array_tc
+
