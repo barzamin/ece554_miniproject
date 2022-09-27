@@ -80,7 +80,7 @@ module memAB_tb();
 
 en = 1'b1;
 
-    for(int cycles = 0; cycles < (DIM*3); ++cycles) begin
+    for(int cycles = 0; cycles < (DIM*4); ++cycles) begin
     
       // sets the Bin and Ain signals
     if(cycles<DIM) begin
