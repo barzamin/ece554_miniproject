@@ -3,7 +3,7 @@ module tpuv1 #(
   parameter BITS_C=16,
   parameter DIM=8,
   parameter ADDRW=16,
-  parameter DATAW=64,
+  parameter DATAW=64
 ) (
   input wire clk, rst_n,
   input wire r_w, // r_w=0 read, =1 write
@@ -107,8 +107,8 @@ module tpuv1 #(
   wire systolic_en;
   wire systolic_WrEn;
   wire [ROWBITS-1:0] Crow;
-  wire signed [BITS_C-1:0] Cin;
-  wire signed [BITS_C-1:0] Cout;
+  wire signed [BITS_C-1:0] Cin [DIM-1:0];
+  wire signed [BITS_C-1:0] Cout [DIM-1:0];
   systolic_array #(
     .BITS_AB(BITS_AB), .BITS_C(BITS_C), .DIM(DIM)
   ) systolic_arr (
@@ -139,29 +139,45 @@ module tpuv1 #(
     systolic_WrEn = '0;
     Crow = '0;
     Arow = '0;
+    dataOut = '0;
 
-    case (addr) inside
-      // ALL ADDRESSES ARE ASSUMED TO BE 8-byte (64-bit) aligned!
-      16'b0000000100??????: begin // A: 0x0100 – 0x013f
-        memA_en = '1;
-        memA_WrEn = '1;
-        Arow = addr[5:4]; // ignore low 4 bits; assume alignment!
-      end
 
-      16'b0000001000?????? : begin // B: 0x0200 - 0x023f
-        memB_en = '1;
-      end
+    if (r_w) begin // write
+      case (addr) inside
+        // ALL ADDRESSES ARE ASSUMED TO BE 8-byte (64-bit) aligned!
+        16'b0000000100??????: begin // A: 0x0100 – 0x013f
+          memA_en = '1;
+          memA_WrEn = '1;
+          Arow = addr[5:4]; // ignore low 4 bits; assume alignment!
+        end
 
-      16'b000000110??????? : begin // C: 0x0300 – 0x037f
-        Cin_latch_lo = '1; // always be latching
-        systolic_WrEn = '1;
-        Crow = addr[6:4];
-      end
+        16'b0000001000?????? : begin // B: 0x0200 - 0x023f
+          memB_en = '1;
+        end
 
-      16'h0400 : begin // MatMul
-        matmul_timer_start = '1;
+        16'b000000110??????? : begin // C: 0x0300 – 0x037f
+          Cin_latch_lo = '1; // always be latching
+          systolic_WrEn = '1;
+          Crow = addr[6:4];
+        end
+
+        16'h0400 : begin // MatMul
+          matmul_timer_start = '1;
+        end
+        default :
+      endcase
+    end else begin // read
+      case (addr) inside
+        16'b000000110??????? : begin // C: 0x0300 – 0x037f
+          Crow = addr[6:4];
+          if (addr[3]) // high bytes of C
+            dataOut = {Cout[7], Cout[6], Cout[5], Cout[4]};
+          else
+            dataOut = {Cout[3], Cout[2], Cout[1], Cout[0]};
+        end
+        default:
       end
-    endcase
+    end
   end
 
 endmodule; // tpuv1
