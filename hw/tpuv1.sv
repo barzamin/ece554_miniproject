@@ -69,8 +69,8 @@ module tpuv1 #(
   end
 
   logic matmul_running;
-  assign zero_pad_AB = matmul_ctr > DIM;
   assign matmul_running = matmul_ctr < MATMUL_CYCLES;
+  assign zero_pad_AB = (matmul_ctr > DIM) && matmul_running;
 
   /*------------------------------------------------------------------------------
   --  memories
