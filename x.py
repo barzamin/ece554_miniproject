@@ -74,6 +74,10 @@ TESTBENCHES = {
     'memAB': {
         'files': ['memA.sv', 'memB.sv', 'fifo.sv', 'fifo_preload.sv', 'memAB_tb.sv'],
         'top': 'memAB_tb',
+    },
+    'tpuv1_integration': {
+        'files': ['memA.sv', 'memB.sv', 'fifo.sv', 'fifo_preload.sv', 'tpuv1.sv', 'tpuv1_integration_tb_v2.sv'],
+        'top': 'tpuv1_integration_tb',
     }
 }
 
