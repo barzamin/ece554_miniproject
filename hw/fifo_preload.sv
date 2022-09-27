@@ -12,7 +12,7 @@ module fifo_preload #(
   output logic signed  [BITS-1:0] q
 );
   
-  logic signed [BITS-1:0] registers [DEPTH *2-1:0];
+  logic signed [BITS-1:0] registers [DEPTH*2-2:0];
 
   // infers an array of chained flops. all flops stop registering their `d` when `~en`.
   always_ff @(posedge clk or negedge rst_n) begin
@@ -21,15 +21,15 @@ module fifo_preload #(
         registers[i] <= '0;
       end
       else if(wr) begin
-        if(i <= 7) begin
+        if(i <= 6) begin
           registers[i] <= '0;
         end
         else begin
-          registers[i] <= d[i-DEPTH];
+          registers[i] <= d[i-DEPTH +1];
         end
       end
       else if(en) begin
-        registers[i] <= (i == DEPTH*2-1) ? 0 : registers[i+1];
+        registers[i] <= (i == DEPTH*2-2) ? 0 : registers[i+1];
       end
     end
   end
