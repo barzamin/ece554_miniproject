@@ -8,7 +8,7 @@ module tpuv1 #(
   input wire clk, rst_n,
   input wire r_w, // r_w=0 read, =1 write
   input wire [DATAW-1:0] dataIn,
-  output wire [DATAW-1:0] dataOut,
+  output logic [DATAW-1:0] dataOut,
   input wire [ADDRW-1:0] addr
 );
   localparam ROWBITS = $clog2(DIM);
@@ -31,11 +31,10 @@ module tpuv1 #(
 
   // we can only fit 4 values of C into dataIn;
   // we register the low bytes from the previous transaction
-  wire signed [BITS_C-1:0] Cin [DIM-1:0];
   reg signed [BITS_C-1:0] Cin_lo [3:0];
   wire signed [BITS_C-1:0] Cin_hi [3:0];
 
-  wire Cin_latch_lo;
+  logic Cin_latch_lo;
   generate
     for (i = 0; i < 4; i++) begin
       // ff for low words of Cin
@@ -80,8 +79,8 @@ module tpuv1 #(
   wire signed [BITS_AB-1:0] Aout [DIM-1:0];
   wire signed [BITS_AB-1:0] Bout [DIM-1:0];
 
-  wire memA_en, memA_WrEn;
-  wire [ROWBITS-1:0] Arow;
+  logic memA_en, memA_WrEn;
+  logic [ROWBITS-1:0] Arow;
   memA #(.BITS_AB(BITS_AB), .DIM(DIM)) memory_A (
     .clk  (clk),
     .rst_n(rst_n),
@@ -89,10 +88,10 @@ module tpuv1 #(
     .WrEn (memA_WrEn),
     .Ain  (Ain),
     .Arow (Arow),
-    .Aout (Aout),
+    .Aout (Aout)
   );
 
-  wire memB_en;
+  logic memB_en;
   memB #(.BITS_AB(BITS_AB), .DIM(DIM)) memory_B (
     .clk  (clk),
     .rst_n(rst_n),
@@ -104,10 +103,9 @@ module tpuv1 #(
   /*------------------------------------------------------------------------------
   --  systolic array
   ------------------------------------------------------------------------------*/
-  wire systolic_en;
-  wire systolic_WrEn;
-  wire [ROWBITS-1:0] Crow;
-  wire signed [BITS_C-1:0] Cin [DIM-1:0];
+  logic systolic_en;
+  logic systolic_WrEn;
+  logic [ROWBITS-1:0] Crow;
   wire signed [BITS_C-1:0] Cout [DIM-1:0];
   systolic_array #(
     .BITS_AB(BITS_AB), .BITS_C(BITS_C), .DIM(DIM)
@@ -122,7 +120,7 @@ module tpuv1 #(
     .Cout (Cout),
 
     .A    (Aout),
-    .B    (Bout),
+    .B    (Bout)
   );
 
   /*------------------------------------------------------------------------------
@@ -164,7 +162,6 @@ module tpuv1 #(
         16'h0400 : begin // MatMul
           matmul_timer_start = '1;
         end
-        default :
       endcase
     end else begin // read
       case (addr) inside
@@ -175,9 +172,8 @@ module tpuv1 #(
           else
             dataOut = {Cout[3], Cout[2], Cout[1], Cout[0]};
         end
-        default:
-      end
+      endcase
     end
   end
 
-endmodule; // tpuv1
+endmodule // tpuv1
