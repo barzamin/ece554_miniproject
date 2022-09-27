@@ -138,6 +138,7 @@ module tpuv1 #(
     Crow = '0;
     Arow = '0;
     dataOut = '0;
+    matmul_timer_start = '0;
 
 
     if (r_w) begin // write
