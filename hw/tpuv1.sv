@@ -71,7 +71,7 @@ module tpuv1 #(
 
   logic matmul_running;
   assign zero_pad_AB = matmul_ctr > DIM;
-  matmul_running = matmul_ctr < MATMUL_CYCLES;
+  assign matmul_running = matmul_ctr < MATMUL_CYCLES;
 
   /*------------------------------------------------------------------------------
   --  memories
@@ -148,7 +148,7 @@ module tpuv1 #(
         16'b0000000100??????: begin // A: 0x0100 – 0x013f
           memA_en = '1;
           memA_WrEn = '1;
-          Arow = addr[5:4]; // ignore low 4 bits; assume alignment!
+          Arow = addr[5:3]; // ignore low 4 bits; assume alignment!
         end
 
         16'b0000001000?????? : begin // B: 0x0200 - 0x023f
