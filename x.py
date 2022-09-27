@@ -125,7 +125,7 @@ def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
         cmd += ['+cover=bcestf', '-coveropt', '3']
 
     cmd += [str(hwdir / fname) for fname in desc['files']]
-    run_tool(TOOLS['vlog'], cmd)
+    run_tool(TOOLS['vlog'], cmd, cwd=workdir/'questa')
     print(f'running vlog... {c.OKBLUE}DONE{c.RESET}')
 
     print(f'running vsim...')
@@ -144,7 +144,7 @@ def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
             '-testname', name,
         ]
 
-    run_tool(TOOLS['vsim'], cmd)
+    run_tool(TOOLS['vsim'], cmd, cwd=workdir/'questa')
     print(f'running vsim... {c.OKGREEN}DONE{c.RESET}')
 
 def test(args):
