@@ -87,18 +87,20 @@ module tpuv1 #(
     matmul_timer_en = '0;
     matmul_timer_rst = '0;
     matmul_done = '0;
+    zero_pad_AB = '0;
 
     unique case (matmul_state)
       MATMUL_IDLE : begin
         matmul_timer_rst = '1;
 
         if (matmul_start) begin
-          matmul_state_next = MATMUL_IDLE;
+          matmul_state_next = MATMUL_PADDING;
         end
       end
 
       MATMUL_PADDING : begin
         matmul_timer_en = '1;
+        zero_pad_AB = '1;
         if (matmul_timer > MATMUL_CYCLES) begin
           matmul_done = '1;
           matmul_state_next = MATMUL_IDLE;
