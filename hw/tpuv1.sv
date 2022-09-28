@@ -1,3 +1,4 @@
+`default_nettype none
 module tpuv1 #(
   parameter BITS_AB=8,
   parameter BITS_C=16,
@@ -56,21 +57,70 @@ module tpuv1 #(
 
 
   /*------------------------------------------------------------------------------
-  --  matmul time counter
+  --  multiplication state machine
   ------------------------------------------------------------------------------*/
   localparam MATMUL_CYCLES = DIM*3-2;
-  logic [$clog2(MATMUL_CYCLES+2)-1:0] matmul_ctr;
-  logic matmul_timer_start;
-  always_ff @(posedge clk or negedge rst_n) begin
-    if (!rst_n | matmul_timer_start)
-      matmul_ctr <= MATMUL_CYCLES+1;
-    else if (matmul_ctr < MATMUL_CYCLES)
-      matmul_ctr <= matmul_ctr + 1;
+  logic matmul_timer_en;
+  logic matmul_timer_rst;
+  logic [$clog2(MATMUL_CYCLES):0] matmul_timer;
+  always_ff @(posedge clk) begin
+    if (matmul_timer_rst)
+      matmul_timer <= '0;
+    else if (matmul_timer_en)
+      matmul_timer <= matmul_timer + 1;
   end
 
-  logic matmul_running;
-  assign matmul_running = matmul_ctr < MATMUL_CYCLES;
-  assign zero_pad_AB = (matmul_ctr > DIM) && matmul_running;
+  typedef enum {MATMUL_IDLE, MATMUL_PADDING} matmul_state_t;
+  matmul_state_t matmul_state, matmul_state_next;
+
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+      matmul_state <= MATMUL_IDLE;
+    else
+      matmul_state <= matmul_state_next;
+  end
+
+  logic matmul_start, matmul_done;
+
+  always_comb begin
+    matmul_state_next = matmul_state;
+    matmul_timer_en = '0;
+    matmul_timer_rst = '0;
+    matmul_done = '0;
+    zero_pad_AB = '0;
+
+    unique case (matmul_state)
+      MATMUL_IDLE : begin
+        matmul_timer_rst = '1;
+
+        if (matmul_start) begin
+          matmul_state_next = MATMUL_PADDING;
+        end
+      end
+
+      MATMUL_PADDING : begin
+        matmul_timer_en = '1;
+        zero_pad_AB = '1;
+        if (matmul_timer > MATMUL_CYCLES) begin
+          matmul_done = '1;
+          matmul_state_next = MATMUL_IDLE;
+        end
+      end
+    endcase
+  end
+
+  // logic [$clog2(MATMUL_CYCLES+2)-1:0] matmul_ctr;
+  // logic matmul_timer_start;
+  // always_ff @(posedge clk or negedge rst_n) begin
+  //   if (!rst_n | matmul_timer_start)
+  //     matmul_ctr <= MATMUL_CYCLES+1;
+  //   else if (matmul_ctr < MATMUL_CYCLES)
+  //     matmul_ctr <= matmul_ctr + 1;
+  // end
+
+  // logic matmul_running;
+  // assign matmul_running = matmul_ctr < MATMUL_CYCLES;
+  // assign zero_pad_AB = (matmul_ctr > DIM) && matmul_running;
 
   /*------------------------------------------------------------------------------
   --  memories
@@ -84,7 +134,7 @@ module tpuv1 #(
   memA #(.BITS_AB(BITS_AB), .DIM(DIM)) memory_A (
     .clk  (clk),
     .rst_n(rst_n),
-    .en   (memA_en || matmul_running),
+    .en   (memA_en || (matmul_state == MATMUL_PADDING)),
     .WrEn (memA_WrEn),
     .Ain  (Ain),
     .Arow (Arow),
@@ -95,7 +145,7 @@ module tpuv1 #(
   memB #(.BITS_AB(BITS_AB), .DIM(DIM)) memory_B (
     .clk  (clk),
     .rst_n(rst_n),
-    .en   (memB_en || matmul_running),
+    .en   (memB_en || (matmul_state == MATMUL_PADDING)),
     .Bin  (Bin),
     .Bout (Bout)
   );
@@ -112,7 +162,7 @@ module tpuv1 #(
   ) systolic_arr (
     .clk  (clk),
     .rst_n(rst_n),
-    .en   (systolic_en | matmul_running),
+    .en   (systolic_en | (matmul_state == MATMUL_PADDING)),
     .WrEn (systolic_WrEn),
 
     .Crow (Crow),
@@ -138,7 +188,7 @@ module tpuv1 #(
     Crow = '0;
     Arow = '0;
     dataOut = '0;
-    matmul_timer_start = '0;
+    matmul_start = '0;
 
 
     if (r_w) begin // write
@@ -161,7 +211,7 @@ module tpuv1 #(
         end
 
         16'h0400 : begin // MatMul
-          matmul_timer_start = '1;
+          matmul_start = '1;
         end
       endcase
     end else begin // read
