@@ -1,25 +1,12 @@
 #!/usr/bin/env python3
 
 import os
-import shutil
-import argparse
-import itertools
+import click
 import subprocess
+import logging
 from pathlib import Path
-from collections import namedtuple
-from jinja2 import Template
 
-class c:
-    HEADER    = '\033[95m'
-    OKBLUE    = '\033[94m'
-    OKCYAN    = '\033[96m'
-    OKGREEN   = '\033[92m'
-    WARNING   = '\033[93m'
-    FAIL      = '\033[91m'
-    RESET     = '\033[0m'
-    BOLD      = '\033[1m'
-    UNDERLINE = '\033[4m'
-
+logger = logging.getLogger(__name__)
 
 QUESTA_BIN = Path('/cae/apps/data/mentor-2022/questasim/bin')
 QUESTA_ENV = {
@@ -82,12 +69,10 @@ TESTBENCHES = {
 }
 
 def vcs_run_tb(name, desc):
-    print(f'{c.HEADER}== running tb {name} {c.BOLD}[VCS]{c.RESET}{c.HEADER} =={c.RESET}')
+    logging.info(f"running tb {name} [in VCS]")
     vcs_workdir = workdir/'vcs'/name
     vcs_workdir.mkdir(parents=True, exist_ok=True)
     simv_bin = vcs_workdir/'simv'
-
-    print(f'building simv...')
 
     cmd = [
         '-full64',
@@ -100,35 +85,36 @@ def vcs_run_tb(name, desc):
     ]
     cmd += [str(hwdir / fname) for fname in desc['files']]
     run_tool(TOOLS['vcs'], cmd)
-    print(f'building simv... {c.OKBLUE}DONE{c.RESET}')
+    logging.info(f"built simv from sources for {name}")
 
-    print(f'running simv...')
+    logging.info("running simv")
     cmd = [
         str(simv_bin),
     ]
     subprocess.run(cmd, check=True)
-    print(f'running simv... {c.OKGREEN}DONE{c.RESET}')
+    logging.info("simv done")
 
 def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
+    logging.info(f"running tb {name} [in questa]")
+
     work = workdir / 'questa' / 'work'
     coverstore = coverstore or workdir / 'questa' / 'coverstore'
     work.mkdir(parents=True, exist_ok=True)
 
-    print(f'running vlog...')
     cmd = [
         '-work', str(work),
         '-timescale=1ns/10ps',
     ]
 
     if record_coverage:
-        print(f'{c.WARNING}building with coverage recording enabled{c.RESET}')
+        logging.warning(f"building {name} with coverage recording enabled")
         cmd += ['+cover=bcestf', '-coveropt', '3']
 
     cmd += [str(hwdir / fname) for fname in desc['files']]
     run_tool(TOOLS['vlog'], cmd, cwd=workdir/'questa')
-    print(f'running vlog... {c.OKBLUE}DONE{c.RESET}')
+    logging.info(f"built workdir from sources for {name}")
 
-    print(f'running vsim...')
+    logging.info("running vsim...")
     cmd = [
         '-work', str(work),
         '-vopt', '-voptargs=+acc',
@@ -137,7 +123,7 @@ def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
         f"work.{desc['top']}",
     ]
     if record_coverage:
-        print(f'{c.WARNING}running with coverage recording enabled{c.RESET}')
+        logging.warning(f"running {name} with coverage recording enabled")
         cmd += [
             '-coverage',
             '-coverstore', str(coverstore),
@@ -145,17 +131,31 @@ def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
         ]
 
     run_tool(TOOLS['vsim'], cmd, cwd=workdir/'questa')
-    print(f'running vsim... {c.OKGREEN}DONE{c.RESET}')
+    logging.info(f"vsim for {name} done!")
 
-def test(args):
-    for testbench in args.testbench:
-        if args.simulator == 'vcs':
+@click.group()
+def cli():
+    """ad hoc lil buildsystem :>"""
+
+@cli.command()
+@click.argument('testbenches', nargs=-1)
+@click.option('-s', '--simulator', type=click.Choice(['vcs', 'questa']), default='questa', help='simulator used to execute testbench', show_default=True)
+@click.option('-c', '--cover', is_flag=True, help='collect coverage data')
+def test(testbenches, simulator, cover):
+    """run given testbench(es)"""
+
+    for testbench in testbenches:
+        if simulator == 'vcs':
             vcs_run_tb(testbench, TESTBENCHES[testbench])
-        elif args.simulator == 'questa':
-            questa_run_tb(testbench, TESTBENCHES[testbench], record_coverage=args.cover)
+        elif simulator == 'questa':
+            questa_run_tb(testbench, TESTBENCHES[testbench], record_coverage=cover)
 
-def questa_cover(args):
-    print(f'merging coverage databases...')
+@cli.command()
+@click.argument('testbenches', nargs=-1)
+def questa_cover(testbenches):
+    """generate coverage report for a questasim ucdb"""
+
+    logging.info("merging coverage databases...")
 
     # TODO
     ucdb_out = workdir / 'questa' / 'coverout.ucdb'
@@ -164,33 +164,12 @@ def questa_cover(args):
     cmd = [
         'merge',
         '-out', str(ucdb_out),
-        f"{str(coverstore)}:{','.join(args.testbench)}"
+        f"{str(coverstore)}:{','.join(testbenches)}"
     ]
     run_tool(TOOLS['vcover'], cmd)
-    print(f'merging coverage databases... {c.OKGREEN}DONE{c.RESET}')
-
-def main():
-    parser = argparse.ArgumentParser(description='ad hoc lil buildsystem :>')
-    subparsers = parser.add_subparsers(title='subcommands',
-                                       description='tasks',
-                                       dest='command')
-    subparsers.required = True
-
-    parser_tests = subparsers.add_parser('test', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser_tests.add_argument('testbench', metavar='TESTBENCH', nargs='+')
-    parser_tests.add_argument('-s', '--simulator',
-        choices=['vcs', 'questa'],
-        default='questa',
-        help='simulator used to run testbench')
-    parser_tests.add_argument('-c', '--cover', action='store_true', help='collect coverage data')
-    parser_tests.set_defaults(func=test)
-
-    parser_questa_cover = subparsers.add_parser('questa-cover', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser_questa_cover.add_argument('testbench', metavar='TESTBENCH', nargs='+')
-    parser_questa_cover.set_defaults(func=questa_cover)
-
-    args = parser.parse_args()
-    args.func(args)
+    logging.info("merged coverage databases")
 
 if __name__ == '__main__':
-    main()
+    logging.basicConfig(level='NOTSET')
+
+    cli()
