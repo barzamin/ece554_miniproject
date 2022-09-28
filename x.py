@@ -109,7 +109,7 @@ def vcs_run_tb(name, desc):
     subprocess.run(cmd, check=True)
     print(f'running simv... {c.OKGREEN}DONE{c.RESET}')
 
-def questa_run_tb(name, desc, record_coverage=False, coverstore=None, waves=False):
+def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
     work = workdir / 'questa' / 'work'
     coverstore = coverstore or workdir / 'questa' / 'coverstore'
     work.mkdir(parents=True, exist_ok=True)
@@ -133,9 +133,7 @@ def questa_run_tb(name, desc, record_coverage=False, coverstore=None, waves=Fals
         '-work', str(work),
         '-vopt', '-voptargs=+acc',
         '-logfile', str(workdir / 'questa' / f"{desc['top']}.log"),
-        '-c',
-        '-do',
-        f"vcd file {str(workdir/'questa'/(desc['top']+'.vcd'))}; vcd add -r {desc['top']}/*; run -all",
+        '-c', '-do', 'run -all',
         f"work.{desc['top']}",
     ]
     if record_coverage:
@@ -185,7 +183,6 @@ def main():
         default='questa',
         help='simulator used to run testbench')
     parser_tests.add_argument('-c', '--cover', action='store_true', help='collect coverage data')
-    parser_tests.add_argument('-w', '--waves', action='store_true', help='record vcd')
     parser_tests.set_defaults(func=test)
 
     parser_questa_cover = subparsers.add_parser('questa-cover', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
