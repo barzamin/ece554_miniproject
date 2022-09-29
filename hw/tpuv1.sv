@@ -189,6 +189,7 @@ module tpuv1 #(
       case (addr) inside
         // ALL ADDRESSES ARE ASSUMED TO BE 8-byte (64-bit) aligned!
         16'b0000000100??????: begin // A: 0x0100 – 0x013f
+          memA_en = '1;
           memA_WrEn = '1;
           Arow = addr[5:3]; // ignore low 4 bits; assume alignment!
         end
