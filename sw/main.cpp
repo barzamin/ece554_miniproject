@@ -28,7 +28,7 @@
 #include <cstdio>
 #include <climits>
 #include <unistd.h>
-
+#include <time.h>
 #include <opae/utils.h>
 
 #include "AFU.h"
@@ -213,7 +213,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Now try it with the AFU.
-
+  struct timespec start, finish, start_compute, end_compute;
+  double total_time, total_compute, ops_rate, compute_ops_rate;
+  clock_gettime( CLOCK_REALTIME, &start );
 	for(ptrdiff_t i = 0; i < DIM_FULL; i+= DIM)
 	{
 		for(ptrdiff_t j = 0; j < DIM_FULL; j+= DIM)
@@ -228,7 +230,10 @@ int main(int argc, char *argv[]) {
 					send_row_A(ii, &A_vals[i+ii][k], afu);
 					send_row_B(ii, &B_vals[k+ii][j], afu);
 				}
+        clock_gettime( CLOCK_REALTIME, &start_compute );
 				afu.write(0x0400, 100);	
+        clock_gettime( CLOCK_REALTIME, &end_compute );
+        total_compute += ( stop.tv_sec - start.tv_sec ) + ( stop.tv_nsec - start.tv_nsec )/ BILLION;
 			}
 			for(ptrdiff_t ii = 0; ii < DIM; ++ii)
 			{
@@ -237,8 +242,11 @@ int main(int argc, char *argv[]) {
 		}	
 
 	}
-
-
+  clock_gettime( CLOCK_REALTIME, &finish ); 
+  total_time = ( stop.tv_sec - start.tv_sec ) + ( stop.tv_nsec - start.tv_nsec )/ BILLION;
+  ops_rate = (2*DIM_FULL*DIM_FULL*DIM_FULL)/total_time;
+  compute_ops_rate = (2*DIM_FULL*DIM_FULL*DIM_FULL)/total_compute;
+  
 
 	// Write each value of A down.
 // 	fprintf(stdout, "Loading A into AFU...\n");
