@@ -222,7 +222,7 @@ int main(int argc, char *argv[]) {
 			{
 				send_row_C(ii, output[i+ii][j], afu);
 			}
-			for(k k = 0; k < DIM; k += BLOCK_SIZE) {
+			for(ptrdiff_t k = 0; k < DIM; k += BLOCK_SIZE) {
 				for(ptrdiff_t ii = 0; ii < BLOCK_SIZE; ++ii)
 				{
 					send_row_A(ii, A_vals[i+ii][k], afu);
