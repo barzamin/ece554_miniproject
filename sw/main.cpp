@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
 
 	fprintf(stdout, "All tests passed. No errors detected.\n");
 
-  fprintf(stdout, "dimension: %d, total time: %d, total compute: %d, ops rate: %d, compute ops rate %d\n", DIM_FULL, total_time, total_compute, ops_rate, compute_ops_rate);
+  fprintf(stdout, "dimension: %d, total time: %lf, total compute: %lf, ops rate: %lf, compute ops rate %lf\n", DIM_FULL, total_time, total_compute, ops_rate, compute_ops_rate);
 
 	return 0;    
   }
