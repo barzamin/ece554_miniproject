@@ -56,6 +56,7 @@ typedef int16_t C_TYPE;
 #define DIM_FULL 64
 #define MAX_VAL _UI16_MAX
 #define DEBUG true
+#define BILLION  1000000000L;
 
 AB_TYPE A_vals[DIM_FULL][DIM_FULL];
 AB_TYPE B_vals[DIM_FULL][DIM_FULL];
@@ -213,7 +214,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Now try it with the AFU.
-  struct timespec start, finish, start_compute, end_compute;
+  struct timespec start, stop, start_compute, end_compute;
   double total_time, total_compute, ops_rate, compute_ops_rate;
   clock_gettime( CLOCK_REALTIME, &start );
 	for(ptrdiff_t i = 0; i < DIM_FULL; i+= DIM)
@@ -246,7 +247,7 @@ int main(int argc, char *argv[]) {
   total_time = ( stop.tv_sec - start.tv_sec ) + ( stop.tv_nsec - start.tv_nsec )/ BILLION;
   ops_rate = (2*DIM_FULL*DIM_FULL*DIM_FULL)/total_time;
   compute_ops_rate = (2*DIM_FULL*DIM_FULL*DIM_FULL)/total_compute;
-  
+
 
 	// Write each value of A down.
 // 	fprintf(stdout, "Loading A into AFU...\n");
