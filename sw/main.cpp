@@ -52,15 +52,15 @@ using namespace std;
 
 typedef int8_t AB_TYPE;
 typedef int16_t C_TYPE;
-#define DIM 64
-#define BLOCK_SIZE 8
+#define DIM 8
+#define DIM_FULL 64
 #define MAX_VAL _UI16_MAX
 #define DEBUG true
 
-AB_TYPE A_vals[DIM][DIM];
-AB_TYPE B_vals[DIM][DIM];
-C_TYPE output[DIM][DIM];
-C_TYPE output_reference[DIM][DIM];
+AB_TYPE A_vals[DIM_FULL][DIM_FULL];
+AB_TYPE B_vals[DIM_FULL][DIM_FULL];
+C_TYPE output[DIM_FULL][DIM_FULL];
+C_TYPE output_reference[DIM_FULL][DIM_FULL];
 
 // Reflect Endian
 template<int width, class BT> BT ref_end(BT in)
@@ -185,9 +185,9 @@ int main(int argc, char *argv[]) {
 	fprintf(stdout, "FULL SYSTEM TEST\n---------------\n");
 	fprintf(stdout, "Populating A and B...\n");
 	// Generate A vals, B vals.
-	for(int y_ind = 0; y_ind < DIM; ++y_ind)
+	for(int y_ind = 0; y_ind < DIM_FULL; ++y_ind)
 	{
-		for(int x_ind = 0; x_ind < DIM; ++x_ind)
+		for(int x_ind = 0; x_ind < DIM_FULL; ++x_ind)
 		{
 			A_vals[y_ind][x_ind] = static_cast<int8_t>(rand() % 255);
 			B_vals[y_ind][x_ind] = static_cast<int8_t>(rand() % 255);
@@ -198,14 +198,14 @@ int main(int argc, char *argv[]) {
 
 	fprintf(stdout, "Calculating reference values of C...\n");
 	// Calculate reference C values.
-	for(int y_ind = 0; y_ind < DIM; ++y_ind)
+	for(int y_ind = 0; y_ind < DIM_FULL; ++y_ind)
 	{
-		for(int x_ind = 0; x_ind < DIM; ++x_ind)
+		for(int x_ind = 0; x_ind < DIM_FULL; ++x_ind)
 		{
 			// Calculate C
 			output_reference[y_ind][x_ind] = 0;
 
-			for(ptrdiff_t wh = 0; wh < DIM; ++wh)
+			for(ptrdiff_t wh = 0; wh < DIM_FULL; ++wh)
 			{
 				output_reference[y_ind][x_ind] += A_vals[y_ind][wh] * B_vals[wh][x_ind];
 			}
@@ -214,27 +214,28 @@ int main(int argc, char *argv[]) {
 
 	// Now try it with the AFU.
 
-	for(ptrdiff_t i = 0; i < DIM; i+= BLOCK_SIZE)
+	for(ptrdiff_t i = 0; i < DIM_FULL; i+= DIM)
 	{
-		for(ptrdiff_t j = 0; j < DIM; j+= BLOCK_SIZE)
+		for(ptrdiff_t j = 0; j < DIM_FULL; j+= DIM)
 		{
-			for(ptrdiff_t ii = 0; ii < BLOCK_SIZE; ++ii)
+			for(ptrdiff_t ii = 0; ii < DIM; ++ii)
 			{
 				send_row_C(ii, &output[i+ii][j], afu);
 			}
-			for(ptrdiff_t k = 0; k < DIM; k += BLOCK_SIZE) {
-				for(ptrdiff_t ii = 0; ii < BLOCK_SIZE; ++ii)
+			for(ptrdiff_t k = 0; k < DIM_FULL; k += DIM) {
+				for(ptrdiff_t ii = 0; ii < DIM; ++ii)
 				{
 					send_row_A(ii, &A_vals[i+ii][k], afu);
 					send_row_B(ii, &B_vals[k+ii][j], afu);
 				}
 				afu.write(0x0400, 100);	
 			}
-			for(ptrdiff_t ii = 0; ii < BLOCK_SIZE; ++ii)
+			for(ptrdiff_t ii = 0; ii < DIM; ++ii)
 			{
 				unpack_from_C(ii, &output[i+ii][j], afu);
 			}
 		}	
+
 	}
 
 
