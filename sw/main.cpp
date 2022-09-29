@@ -16,10 +16,10 @@
 // Greg Stitt
 // University of Florida
 //
-// This example demonstrates an AFU wrapper class built around the OPAE API
+// This example demonstrates an AFU wrapper class built around the OPAE API 
 // to do the following:
 // 1) request an FPGA with a specific AFU
-// 2) read and write from a memory-mapped register in the FPGA
+// 2) read and write from a memory-mapped register in the FPGA 
 
 #include <cstdlib>
 #include <iostream>
@@ -52,7 +52,8 @@ using namespace std;
 
 typedef int8_t AB_TYPE;
 typedef int16_t C_TYPE;
-#define DIM 8
+#define DIM 64
+#define BLOCK_SIZE 8
 #define MAX_VAL _UI16_MAX
 #define DEBUG true
 
@@ -171,7 +172,7 @@ void unpack_from_C(uint16_t row, C_TYPE * vals, AFU& afu)
 int main(int argc, char *argv[]) {
 
   try {
-    // Create an AFU object to provide basic services for the FPGA. The
+    // Create an AFU object to provide basic services for the FPGA. The 
     // constructor searchers available FPGAs for one with an AFU with the
     // the specified ID
     AFU afu(AFU_ACCEL_UUID);
@@ -190,6 +191,7 @@ int main(int argc, char *argv[]) {
 		{
 			A_vals[y_ind][x_ind] = static_cast<int8_t>(rand() % 255);
 			B_vals[y_ind][x_ind] = static_cast<int8_t>(rand() % 255);
+			output[y_ind][x_ind] = 0;
 		}
 	}
 
@@ -212,33 +214,58 @@ int main(int argc, char *argv[]) {
 
 	// Now try it with the AFU.
 
+	for(ptrdiff_t i = 0; i < DIM; i+= BLOCK_SIZE)
+	{
+		for(ptrdiff_t j = 0; j < DIM; j+= BLOCK_SIZE)
+		{
+			for(ptrdiff_t ii = 0; ii < BLOCK_SIZE; ++ii)
+			{
+				send_row_C(ii, output[i+ii][j], afu);
+			}
+			for(k k = 0; k < DIM; k += BLOCK_SIZE) {
+				for(ptrdiff_t ii = 0; ii < BLOCK_SIZE; ++ii)
+				{
+					send_row_A(a_r, A_vals[i+ii][k], afu);
+					send_row_B(b_r, B_vals[k+ii][j], afu);
+				}
+				afu.write(0x0400, 100);	
+			}
+			for(ptrdiff_t ii = 0; ii < BLOCK_SIZE; ++ii)
+			{
+				unpack_from_C(ii, output[i+ii][j], afu);
+			}
+		}	
+	}
+
+
+
 	// Write each value of A down.
-	fprintf(stdout, "Loading A into AFU...\n");
-	for(ptrdiff_t a_r = 0; a_r < DIM; ++a_r)
-	{
-		send_row_A(a_r, A_vals[a_r], afu);
-	}
+// 	fprintf(stdout, "Loading A into AFU...\n");
+// 	for(ptrdiff_t a_r = 0; a_r < BLOCK_SIZE; ++a_r)
+// 	{
+// 		send_row_A(a_r, A_vals[a_r], afu);
+// 	}
 
-	// Push each value of B.
-	fprintf(stdout, "Loading B into AFU...\n");
-	for(ptrdiff_t b_r = 0; b_r < DIM; ++b_r)
-	{
-		send_row_B(b_r, B_vals[b_r], afu);
-	}
+// 	// Push each value of B.
+// 	fprintf(stdout, "Loading B into AFU...\n");
+// 	for(ptrdiff_t b_r = 0; b_r < BLOCK_SIZE; ++b_r)
+// 	{
+// 		send_row_B(b_r, B_vals[b_r], afu);
+// 	}
 
-	// Calculate
-	fprintf(stdout, "Performing Calculation...\n");
-	afu.write(0x0400, 100);
-	// Do we have to sleep?
-//	usleep(1000*1000);
+// 	// Calculate
+// 	fprintf(stdout, "Performing Calculation...\n");
+// 	afu.write(0x0400, 100);
+// 	// Do we have to sleep?
+// //	usleep(1000*1000);
 
-	// Read Values.
-	fprintf(stdout, "Reading Output from C...\n");
+// 	// Read Values.
+// 	fprintf(stdout, "Reading Output from C...\n");
 
-	for(ptrdiff_t c_r = 0; c_r < DIM; ++c_r)
-	{
-		unpack_from_C(c_r, output[c_r], afu);
-	}
+// 	for(ptrdiff_t c_r = 0; c_r < DIM; ++c_r)
+// 	{
+// 		unpack_from_C(c_r, output[c_r], afu);
+// 	}
 
 	// Compare.
 	fprintf(stdout, "Calculation finished. Testing values...\n");
@@ -255,26 +282,26 @@ int main(int argc, char *argv[]) {
 
 	fprintf(stdout, "All tests passed. No errors detected.\n");
 
-	return 0;
+	return 0;    
   }
-  // Exception handling for all the runtime errors that can occur within
+  // Exception handling for all the runtime errors that can occur within 
   // the AFU wrapper class.
-  catch (const fpga_result& e) {
-
+  catch (const fpga_result& e) {    
+    
     // Provide more meaningful error messages for each exception.
     if (e == FPGA_BUSY) {
       cerr << "ERROR: All FPGAs busy." << endl;
     }
-    else if (e == FPGA_NOT_FOUND) {
-      cerr << "ERROR: FPGA with accelerator " << AFU_ACCEL_UUID
+    else if (e == FPGA_NOT_FOUND) { 
+      cerr << "ERROR: FPGA with accelerator " << AFU_ACCEL_UUID 
 	   << " not found." << endl;
     }
     else {
       // Print the default error string for the remaining fpga_result types.
-      cerr << "ERROR: " << fpgaErrStr(e) << endl;
+      cerr << "ERROR: " << fpgaErrStr(e) << endl;    
     }
   }
-  catch (const runtime_error& e) {
+  catch (const runtime_error& e) {    
     cerr << e.what() << endl;
   }
   catch (const opae::fpga::types::no_driver& e) {
