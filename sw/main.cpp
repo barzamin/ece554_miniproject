@@ -292,6 +292,8 @@ int main(int argc, char *argv[]) {
 
 	fprintf(stdout, "All tests passed. No errors detected.\n");
 
+  fprintf(stdout, "dimension: %d, total time: %d, total compute: %d, ops rate: %d, compute ops rate %d\n", DIM_FULL, total_time, total_compute, ops_rate, compute_ops_rate);
+
 	return 0;    
   }
   // Exception handling for all the runtime errors that can occur within 
