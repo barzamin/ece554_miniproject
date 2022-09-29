@@ -34,5 +34,5 @@ module fifo_preload #(
     end
   end
 
-  assign q = (en) ? registers[0] : 0;
-endmodule // fifo
+  assign q = registers[0];
+endmodule // fifo_preload
