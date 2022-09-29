@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
         clock_gettime( CLOCK_REALTIME, &start_compute );
 				afu.write(0x0400, 100);	
         clock_gettime( CLOCK_REALTIME, &end_compute );
-        total_compute += ( end_compute.tv_sec - start_compute.tv_sec ) + ( end_compute.tv_nsec - start_compute.tv_nsec )/ BILLION;
+        total_compute += ( end_compute.tv_nsec - start_compute.tv_nsec );
 			}
 			for(ptrdiff_t ii = 0; ii < DIM; ++ii)
 			{
@@ -244,7 +244,7 @@ int main(int argc, char *argv[]) {
 
 	}
   clock_gettime( CLOCK_REALTIME, &stop ); 
-  total_time = ( stop.tv_sec - start.tv_sec ) + ( stop.tv_nsec - start.tv_nsec )/ BILLION;
+  total_time =  ( stop.tv_nsec - start.tv_nsec );
   ops_rate = (2*DIM_FULL*DIM_FULL*DIM_FULL)/total_time;
   compute_ops_rate = (2*DIM_FULL*DIM_FULL*DIM_FULL)/total_compute;
 
