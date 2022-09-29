@@ -32,29 +32,22 @@ module tpuv1 #(
 
   // we can only fit 4 values of C into dataIn;
   // we register the low bytes from the previous transaction
-  reg signed [BITS_C-1:0] Cin_lo [3:0];
-  wire signed [BITS_C-1:0] Cin_hi [3:0];
-
+  logic signed [BITS_C-1:0] Cin [DIM-1:0];
   logic Cin_latch_lo;
   generate
     for (i = 0; i < 4; i++) begin
       // ff for low words of Cin
       always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n)
-          Cin_lo[i] <= '0;
+          Cin[i] <= '0;
         else if (Cin_latch_lo)
-          Cin_lo[i] <= dataIn[i*BITS_C +: BITS_C];
+          Cin[i] <= dataIn[i*BITS_C +: BITS_C];
       end
 
       // wiring for high words of Cin
-      assign Cin_hi[i] = dataIn[i*BITS_C +: BITS_C];
+      assign Cin[i+4] = dataIn[i*BITS_C +: BITS_C];
     end
   endgenerate
-
-  // form Cin
-  wire signed [BITS_C-1:0] Cin [DIM-1:0];
-  assign Cin = {Cin_hi, Cin_lo};
-
 
   /*------------------------------------------------------------------------------
   --  multiplication state machine
@@ -81,6 +74,7 @@ module tpuv1 #(
   end
 
   logic matmul_start, matmul_done;
+  logic systolic_en;
 
   always_comb begin
     matmul_state_next = matmul_state;
@@ -88,6 +82,7 @@ module tpuv1 #(
     matmul_timer_rst = '0;
     matmul_done = '0;
     zero_pad_AB = '0;
+    systolic_en = '0;
 
     unique case (matmul_state)
       MATMUL_IDLE : begin
@@ -100,6 +95,7 @@ module tpuv1 #(
 
       MATMUL_PADDING : begin
         matmul_timer_en = '1;
+        systolic_en = '1;
         zero_pad_AB = '1;
         if (matmul_timer > MATMUL_CYCLES) begin
           matmul_done = '1;
@@ -153,7 +149,6 @@ module tpuv1 #(
   /*------------------------------------------------------------------------------
   --  systolic array
   ------------------------------------------------------------------------------*/
-  logic systolic_en;
   logic systolic_WrEn;
   logic [ROWBITS-1:0] Crow;
   wire signed [BITS_C-1:0] Cout [DIM-1:0];
@@ -162,7 +157,7 @@ module tpuv1 #(
   ) systolic_arr (
     .clk  (clk),
     .rst_n(rst_n),
-    .en   (systolic_en | (matmul_state == MATMUL_PADDING)),
+    .en   (systolic_en),
     .WrEn (systolic_WrEn),
 
     .Crow (Crow),
@@ -183,7 +178,6 @@ module tpuv1 #(
     memA_WrEn = '0;
     memB_en = '0;
     Cin_latch_lo = '0;
-    systolic_en = '0;
     systolic_WrEn = '0;
     Crow = '0;
     Arow = '0;
