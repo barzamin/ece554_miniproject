@@ -225,8 +225,8 @@ int main(int argc, char *argv[]) {
 			for(k k = 0; k < DIM; k += BLOCK_SIZE) {
 				for(ptrdiff_t ii = 0; ii < BLOCK_SIZE; ++ii)
 				{
-					send_row_A(a_r, A_vals[i+ii][k], afu);
-					send_row_B(b_r, B_vals[k+ii][j], afu);
+					send_row_A(ii, A_vals[i+ii][k], afu);
+					send_row_B(ii, B_vals[k+ii][j], afu);
 				}
 				afu.write(0x0400, 100);	
 			}
