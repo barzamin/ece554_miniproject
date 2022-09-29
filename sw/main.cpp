@@ -243,7 +243,7 @@ int main(int argc, char *argv[]) {
 		}	
 
 	}
-  clock_gettime( CLOCK_REALTIME, &finish ); 
+  clock_gettime( CLOCK_REALTIME, &stop ); 
   total_time = ( stop.tv_sec - start.tv_sec ) + ( stop.tv_nsec - start.tv_nsec )/ BILLION;
   ops_rate = (2*DIM_FULL*DIM_FULL*DIM_FULL)/total_time;
   compute_ops_rate = (2*DIM_FULL*DIM_FULL*DIM_FULL)/total_compute;
