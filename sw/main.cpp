@@ -232,7 +232,7 @@ int main(int argc, char *argv[]) {
 			}
 			for(ptrdiff_t ii = 0; ii < BLOCK_SIZE; ++ii)
 			{
-				unpack_from_C(ii, *output[i+ii][j], afu);
+				unpack_from_C(ii, &output[i+ii][j], afu);
 			}
 		}	
 	}
