@@ -58,25 +58,22 @@ basedir = Path(__file__).parent.resolve()
 hwdir = basedir / 'hw'
 workdir = basedir / 'xwork'
 
+with open(hwdir / 'filelist_test.txt') as f:
+    FILELIST = [hwdir / x.strip() for x in f.read().strip().split()]
 TESTBENCHES = {
     'fifo': {
-        'files': ['fifo.sv', 'fifo_tb.sv'],
         'top': 'fifo_tb',
     },
     'tpumac': {
-        'files': ['tpumac.sv', 'tpumac_tb.sv'],
         'top': 'tpumac_tb',
     },
     'systolic_array': {
-        'files': ['tpumac.sv', 'systolic_array.sv', 'systolic_array_tb.sv'],
         'top': 'systolic_array_tb',
     },
     'memAB': {
-        'files': ['memA.sv', 'memB.sv', 'fifo.sv', 'fifo_preload.sv', 'memAB_tb.sv'],
         'top': 'memAB_tb',
     },
     'tpuv1_integration': {
-        'files': ['memA.sv', 'memB.sv', 'fifo.sv', 'fifo_preload.sv', 'systolic_array.sv', 'tpumac.sv', 'tpuv1.sv', 'tpuv1_integration_tb_v2.sv'],
         'top': 'tpuv1_integration_tb',
     }
 }
@@ -111,6 +108,7 @@ def vcs_run_tb(name, desc):
 
 def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
     work = workdir / 'questa' / 'work'
+    wlf = workdir / 'questa' / f"{desc['top']}.wlf"
     coverstore = coverstore or workdir / 'questa' / 'coverstore'
     work.mkdir(parents=True, exist_ok=True)
 
@@ -124,16 +122,20 @@ def questa_run_tb(name, desc, record_coverage=False, coverstore=None):
         print(f'{c.WARNING}building with coverage recording enabled{c.RESET}')
         cmd += ['+cover=bcestf', '-coveropt', '3']
 
-    cmd += [str(hwdir / fname) for fname in desc['files']]
+    # cmd += [str(hwdir / fname) for fname in desc['files']]
+    cmd += [str(x) for x in FILELIST]
     run_tool(TOOLS['vlog'], cmd, cwd=workdir/'questa')
     print(f'running vlog... {c.OKBLUE}DONE{c.RESET}')
 
     print(f'running vsim...')
     cmd = [
         '-work', str(work),
+        '-wlf', str(wlf),
         '-vopt', '-voptargs=+acc',
+        # TODO: switch
+        # '-novopt', '-suppress', '12110',
         '-logfile', str(workdir / 'questa' / f"{desc['top']}.log"),
-        '-c', '-do', 'run -all',
+        '-c', '-do', 'add wave -r tpuv1_integration_tb/DUT/* ; run -all',
         f"work.{desc['top']}",
     ]
     if record_coverage:
@@ -192,5 +194,19 @@ def main():
     args = parser.parse_args()
     args.func(args)
 
+@cli.command()
+@click.argument('testbench')
+# @click.option('--waves')
+def waves(testbench):
+    desc = TESTBENCHES[testbench]
+    wlf = workdir / 'questa' / f"{desc['top']}.wlf"
+    env = os.environ.copy()
+    env.update(QUESTA_ENV)
+    subprocess.run([TOOLS['vsim']['bin'],
+        '-view', str(wlf), '-do',
+        'add wave -r tpuv1_integration_tb/DUT/*'],
+        env=env,
+    )
+ 
 if __name__ == '__main__':
     main()
