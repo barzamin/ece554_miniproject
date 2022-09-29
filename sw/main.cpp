@@ -244,7 +244,7 @@ int main(int argc, char *argv[]) {
 
 	}
   clock_gettime( CLOCK_REALTIME, &stop ); 
-  total_time =  ( stop.tv_nsec - start.tv_nsec );
+  total_time =  ( stop.tv_nsec - start.tv_nsec )/1000000;
   ops_rate = (2*DIM_FULL*DIM_FULL*DIM_FULL)/total_time;
   compute_ops_rate = (2*DIM_FULL*DIM_FULL*DIM_FULL)/total_compute;
 
