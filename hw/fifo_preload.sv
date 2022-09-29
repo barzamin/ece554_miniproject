@@ -16,7 +16,7 @@ module fifo_preload #(
 
   // infers an array of chained flops. all flops stop registering their `d` when `~en`.
   always_ff @(posedge clk or negedge rst_n) begin
-    for (integer i = 0; i < DEPTH*2; i++) begin
+    for (integer i = 0; i < DEPTH*2-1; i++) begin
       if (!rst_n) begin
         registers[i] <= '0;
       end
