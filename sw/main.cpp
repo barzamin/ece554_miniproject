@@ -247,8 +247,8 @@ int main(int argc, char *argv[]) {
   total_time =  ( stop.tv_nsec - start.tv_nsec );
   ops_rate = ((2*DIM_FULL*DIM_FULL*DIM_FULL)/total_time)*BILLION;
   compute_ops_rate = ((2*DIM_FULL*DIM_FULL*DIM_FULL)/total_compute) *BILLION;
-  tops = ops_rate/1000000000000	
-  compute_tops = compute_ops_rate/1000000000000	
+  tops = ops_rate/1000000000000	;
+  compute_tops = compute_ops_rate/1000000000000;	
 	// Write each value of A down.
 // 	fprintf(stdout, "Loading A into AFU...\n");
 // 	for(ptrdiff_t a_r = 0; a_r < BLOCK_SIZE; ++a_r)
