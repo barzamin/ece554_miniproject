@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
         clock_gettime( CLOCK_REALTIME, &start_compute );
 				afu.write(0x0400, 100);	
         clock_gettime( CLOCK_REALTIME, &end_compute );
-        total_compute += ( double(end_compute.tv_nsec) - double(start_compute.tv_nsec) );
+        total_compute +=  (double)( end_compute.tv_sec - start_compute.tv_sec ) + (double)(end_compute.tv_nsec - start_compute.tv_nsec)/(double)(BILLION);
 			}
 			for(ptrdiff_t ii = 0; ii < DIM; ++ii)
 			{
@@ -244,9 +244,9 @@ int main(int argc, char *argv[]) {
 
 	}
   clock_gettime( CLOCK_REALTIME, &stop ); 
-  total_time =  ( stop.tv_sec - start.tv_sec ) + (stop.tv_nsec - start.tv_nsec)/BILLION;
-  ops_rate = ((2*DIM_FULL*DIM_FULL*DIM_FULL)/total_time)*BILLION;
-  compute_ops_rate = ((2*DIM_FULL*DIM_FULL*DIM_FULL)/total_compute) *BILLION;
+  total_time =  (double)( stop.tv_sec - start.tv_sec ) + (double)(stop.tv_nsec - start.tv_nsec)/(double)(BILLION);
+  ops_rate = ((2*DIM_FULL*DIM_FULL*DIM_FULL)/total_time);
+  compute_ops_rate = ((2*DIM_FULL*DIM_FULL*DIM_FULL)/total_compute);
   tops = ops_rate/1000000000000;
   compute_tops = compute_ops_rate/1000000000000;	
 	// Write each value of A down.
