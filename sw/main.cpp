@@ -56,7 +56,7 @@ typedef int16_t C_TYPE;
 #define DIM_FULL 128
 #define MAX_VAL _UI16_MAX
 #define DEBUG true
-#define BILLION  1000000000L;
+#define BILLION  1000000000D;
 
 AB_TYPE A_vals[DIM_FULL][DIM_FULL];
 AB_TYPE B_vals[DIM_FULL][DIM_FULL];
@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
         clock_gettime( CLOCK_REALTIME, &start_compute );
 				afu.write(0x0400, 100);	
         clock_gettime( CLOCK_REALTIME, &end_compute );
-        total_compute +=  (double)( end_compute.tv_sec - start_compute.tv_sec ) + (double)(end_compute.tv_nsec - start_compute.tv_nsec)/(double)(BILLION);
+        total_compute +=  (double)( end_compute.tv_sec - start_compute.tv_sec ) + (double)(end_compute.tv_nsec - start_compute.tv_nsec)/BILLION;
 			}
 			for(ptrdiff_t ii = 0; ii < DIM; ++ii)
 			{
@@ -244,7 +244,7 @@ int main(int argc, char *argv[]) {
 
 	}
   clock_gettime( CLOCK_REALTIME, &stop ); 
-  total_time =  (double)( stop.tv_sec - start.tv_sec ) + (double)(stop.tv_nsec - start.tv_nsec)/(double)(BILLION);
+  total_time =  (double)( stop.tv_sec - start.tv_sec ) + (double)(stop.tv_nsec - start.tv_nsec)/BILLION;
   ops_rate = ((2*DIM_FULL*DIM_FULL*DIM_FULL)/total_time);
   compute_ops_rate = ((2*DIM_FULL*DIM_FULL*DIM_FULL)/total_compute);
   tops = ops_rate/1000000000000;
