@@ -56,7 +56,6 @@ typedef int16_t C_TYPE;
 #define DIM_FULL 128
 #define MAX_VAL _UI16_MAX
 #define DEBUG true
-#define BILLION  1000000000D;
 
 AB_TYPE A_vals[DIM_FULL][DIM_FULL];
 AB_TYPE B_vals[DIM_FULL][DIM_FULL];
@@ -216,6 +215,7 @@ int main(int argc, char *argv[]) {
 	// Now try it with the AFU.
   struct timespec start, stop, start_compute, end_compute;
   double total_time, total_compute, ops_rate, compute_ops_rate, tops, compute_tops;
+  double billion = 1000000000;
   clock_gettime( CLOCK_REALTIME, &start );
 	for(ptrdiff_t i = 0; i < DIM_FULL; i+= DIM)
 	{
@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
         clock_gettime( CLOCK_REALTIME, &start_compute );
 				afu.write(0x0400, 100);	
         clock_gettime( CLOCK_REALTIME, &end_compute );
-        total_compute +=  (double)( end_compute.tv_sec - start_compute.tv_sec ) + (double)(end_compute.tv_nsec - start_compute.tv_nsec)/BILLION;
+        total_compute +=  (double)( end_compute.tv_sec - start_compute.tv_sec ) + (double)(end_compute.tv_nsec - start_compute.tv_nsec)/billion;
 			}
 			for(ptrdiff_t ii = 0; ii < DIM; ++ii)
 			{
@@ -243,8 +243,9 @@ int main(int argc, char *argv[]) {
 		}	
 
 	}
+
   clock_gettime( CLOCK_REALTIME, &stop ); 
-  total_time =  (double)( stop.tv_sec - start.tv_sec ) + (double)(stop.tv_nsec - start.tv_nsec)/BILLION;
+  total_time =  (double)( stop.tv_sec - start.tv_sec ) + (double)(stop.tv_nsec - start.tv_nsec)/billion;
   ops_rate = ((2*DIM_FULL*DIM_FULL*DIM_FULL)/total_time);
   compute_ops_rate = ((2*DIM_FULL*DIM_FULL*DIM_FULL)/total_compute);
   tops = ops_rate/1000000000000;
