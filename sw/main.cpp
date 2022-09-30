@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
 
 	// Now try it with the AFU.
   struct timespec start, stop, start_compute, end_compute;
-  double total_time, total_compute, ops_rate, compute_ops_rate;
+  double total_time, total_compute, ops_rate, compute_ops_rate, tops, compute_tops;
   clock_gettime( CLOCK_REALTIME, &start );
 	for(ptrdiff_t i = 0; i < DIM_FULL; i+= DIM)
 	{
@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
 
 	fprintf(stdout, "All tests passed. No errors detected.\n");
 
-  fprintf(stdout, "dimension: %d, total time (ns): %lf, total compute (ns): %lf, ops rate: %lf, compute ops rate %lf\n", DIM_FULL, total_time, total_compute, ops_rate, compute_ops_rate);
+  fprintf(stdout, "dimension: %d, total time (ns): %lf, total compute (ns): %lf, tops rate: %lf, compute tops rate %lf\n", DIM_FULL, total_time, total_compute, tops, compute_tops);
 
 	return 0;    
   }
