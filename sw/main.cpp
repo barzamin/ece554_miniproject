@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
         clock_gettime( CLOCK_REALTIME, &start_compute );
 				afu.write(0x0400, 100);	
         clock_gettime( CLOCK_REALTIME, &end_compute );
-        total_compute += ( end_compute.tv_nsec - start_compute.tv_nsec )/1000000000;
+        total_compute += ( end_compute.tv_nsec - start_compute.tv_nsec );
 			}
 			for(ptrdiff_t ii = 0; ii < DIM; ++ii)
 			{
@@ -244,9 +244,9 @@ int main(int argc, char *argv[]) {
 
 	}
   clock_gettime( CLOCK_REALTIME, &stop ); 
-  total_time =  ( stop.tv_nsec - start.tv_nsec )/1000000000;
-  ops_rate = (2*DIM_FULL*DIM_FULL*DIM_FULL)/total_time;
-  compute_ops_rate = (2*DIM_FULL*DIM_FULL*DIM_FULL)/total_compute;
+  total_time =  ( stop.tv_nsec - start.tv_nsec );
+  ops_rate = ((2*DIM_FULL*DIM_FULL*DIM_FULL)/total_time)*BILLION;
+  compute_ops_rate = ((2*DIM_FULL*DIM_FULL*DIM_FULL)/total_compute) *BILLION;
 
 
 	// Write each value of A down.
@@ -292,7 +292,7 @@ int main(int argc, char *argv[]) {
 
 	fprintf(stdout, "All tests passed. No errors detected.\n");
 
-  fprintf(stdout, "dimension: %d, total time: %lf, total compute: %lf, ops rate: %lf, compute ops rate %lf\n", DIM_FULL, total_time, total_compute, ops_rate, compute_ops_rate);
+  fprintf(stdout, "dimension: %d, total time (ns): %lf, total compute (ns): %lf, ops rate: %lf, compute ops rate %lf\n", DIM_FULL, total_time, total_compute, ops_rate, compute_ops_rate);
 
 	return 0;    
   }
