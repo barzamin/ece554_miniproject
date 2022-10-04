@@ -1,6 +1,6 @@
 MATMUL				(initiate matrix multiplication)
-SENDC 	Ra, CHI, CROW		(write to matmul C value, CHI for high bits of row CROW specifies, Ra <= Ra + 8)
-WRITEC	Ra, CHI, CROW		(write to cache value of C, CHI for high bits of row CROW specifies row, Ra <= Ra + 8)
+SENDC 	Ra, CLO, CROW		(write to matmul C value, CLO high when writing low bits, CROW specifies, Ra <= Ra + 8)
+WRITEC	Ra, CLO, CROW		(write to cache value of C, CLO high when writing low bits, CROW specifies row, Ra <= Ra + 8)
 SENDA	Ra, AROW		(write to matmul memA the value in Ra to row specified by literal, Ra <= Ra + 8)
 SENDB	Ra			(write to matmul module memB value in Ra, Ra <= Ra + 8)
 JNZDEC	Ra, R0	 		(PC <= PC + R0 if Ra is not equal to Zero then if Ra is not equal to zero Ra <= Ra - 1)
