@@ -1,9 +1,9 @@
-ADDI    r7, zero, $1
-ADDI    r6, zero, $-1
-ADDI    r3, h1, zero
-ADDI	r0, zero, $8
+ADDI    r6, zero, $-1		// used as constant -1 for SHADD
+ADDI    r3, h1, zero		// sets r3 to initial C mem location
+ADDI	r0, zero, $8		// sets two outer loop variables
 ADDI	r1, zero, $8
-SENDC   r3, 1'b0, $0
+
+SENDC   r3, 1'b0, $0		// send C values for current tile
 SENDC	r3, 1'b1, $0
 SENDC	r3, 1'b0, $1
 SENDC	r3, 1'b1, $1
@@ -21,20 +21,30 @@ SENDC	r3, 1'b0, $7
 SENDC	r3, 1'b1, $7
 SHADD   r3, r3, r6, $7
 
-ADDI	r2, zero, $8
-SHADD	r8, zero, h0, $9
-SUBI	r9, r2, $8
-LSHIFT	r10, r8, r9
-ADD	r4, h2, r10
-SUBI	r9, r1, $8
-SHADD	r4, r4, r9, $9
-SUBI	r9, r0, $8
-LSHIFT	r10, r8, r9
-ADD	r5, h3, r10
-SUBI	r9, r2, $8
+ADDI	r2, zero, $8		// initialize r2 loop variable to 8
+SHADD	r8, zero, h0, $9	// initialize r8, which holds size of a row of tiles in A and B matrices
+
+SUBI	r9, $8, r2		// calculates the address of the current tile for A
+ADDI	r10, r9, zero
+ADDI	r4, h2, zero
+BGT	r10, zero, $4
+ADD	r4, r4, r8
+SUBI	r10, r10, $-1
+BGT	r10, zero, $-2
+SUBI	r9, $8, r1
 SHADD	r4, r4, r9, $9
 
-SENDA	r4, $0
+SUBI	r9, $8, r0		// calculates the address of the current tile for B
+ADDI	r10, r9, zero
+ADDI	r5, h3, zero
+BGT	r10, zero, $4
+ADD	r5, r5, r8
+SUBI	r10, r10, $-1
+BGT	r10, zero, $-2
+SUBI	r9, $8, r2
+SHADD	r5, r5, r9, $9
+
+SENDA	r4, $0			// send A and B values for current tile
 SENDB	r5
 SENDA	r4, $1
 SENDB	r5
@@ -51,10 +61,10 @@ SENDB	r5
 SENDA	r4, $7
 SENDB	r5
 
-MATMUL
-JNZDEC	r2, $-28
+MATMUL				// matrix multiply followed by loop and decrement
+JNZDEC	r2, $-38
 
-WRITEC	r3, 1'b0, $0
+WRITEC	r3, 1'b0, $0		// write back C values
 WRITEC	r3, 1'b1, $0
 WRITEC	r3, 1'b0, $1
 WRITEC	r3, 1'b1, $1
@@ -71,5 +81,5 @@ WRITEC	r3, 1'b1, $6
 WRITEC	r3, 1'b0, $7
 WRITEC	r3, 1'b1, $7
 
-JNZDEC	r1, $-51
-JNZDEC	r0, $-68
+JNZDEC	r1, $-77		// conditional jump and decrements for outer loops
+JNZDEC	r0, $-80
