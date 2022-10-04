@@ -1,0 +1,75 @@
+ADDI    r7, zero, $1
+ADDI    r6, zero, $-1
+ADDI    r3, h1, zero
+ADDI	r0, zero, $8
+ADDI	r1, zero, $8
+SENDC   r3, 1'b0, $0
+SENDC	r3, 1'b1, $0
+SENDC	r3, 1'b0, $1
+SENDC	r3, 1'b1, $1
+SENDC	r3, 1'b0, $2
+SENDC	r3, 1'b1, $2
+SENDC	r3, 1'b0, $3
+SENDC	r3, 1'b1, $3
+SENDC	r3, 1'b0, $4
+SENDC	r3, 1'b1, $4
+SENDC	r3, 1'b0, $5
+SENDC	r3, 1'b1, $5
+SENDC	r3, 1'b0, $6
+SENDC	r3, 1'b1, $6
+SENDC	r3, 1'b0, $7
+SENDC	r3, 1'b1, $7
+SHADD   r3, r3, r6, $7
+
+ADDI	r2, zero, $8
+SHADD	r8, zero, h0, $9
+SUBI	r9, r2, $8
+LSHIFT	r10, r8, r9
+ADD	r4, h2, r10
+SUBI	r9, r1, $8
+SHADD	r4, r4, r9, $9
+SUBI	r9, r0, $8
+LSHIFT	r10, r8, r9
+ADD	r5, h3, r10
+SUBI	r9, r2, $8
+SHADD	r4, r4, r9, $9
+
+SENDA	r4, $0
+SENDB	r5
+SENDA	r4, $1
+SENDB	r5
+SENDA	r4, $2
+SENDB	r5
+SENDA	r4, $3
+SENDB	r5
+SENDA	r4, $4
+SENDB	r5
+SENDA	r4, $5
+SENDB	r5
+SENDA	r4, $6
+SENDB	r5
+SENDA	r4, $7
+SENDB	r5
+
+MATMUL
+JNZDEC	r2, $-28
+
+WRITEC	r3, 1'b0, $0
+WRITEC	r3, 1'b1, $0
+WRITEC	r3, 1'b0, $1
+WRITEC	r3, 1'b1, $1
+WRITEC	r3, 1'b0, $2
+WRITEC	r3, 1'b1, $2
+WRITEC	r3, 1'b0, $3
+WRITEC	r3, 1'b1, $3
+WRITEC	r3, 1'b0, $4
+WRITEC	r3, 1'b1, $4
+WRITEC	r3, 1'b0, $5
+WRITEC	r3, 1'b1, $5
+WRITEC	r3, 1'b0, $6
+WRITEC	r3, 1'b1, $6
+WRITEC	r3, 1'b0, $7
+WRITEC	r3, 1'b1, $7
+
+JNZDEC	r1, $-51
+JNZDEC	r0, $-68
