@@ -9,8 +9,8 @@ LSHIFT	R0, Ra, Rb		(R0 <= Rb<Rshift)
 SUBI	Ra, Rb, IMM		(Ra <= Rb - IMM)
 ADD	R0, Ra, Rb		(R0 <= Ra + Rb)
 XOR	R0, Ra, Rb		(R0 <= Ra ^ Rb)
-BGT	R0, Ra, Rb		(if Ra > Rb PC <= R0)
-BEQ	R0, Ra, Rb		(if Ra == Rb PC <= R0)
+BGT	Ra, Rb, OFFSET		(if Ra > Rb PC <= PC + OFFSET)
+BEQ	Ra, Rb, OFFSET		(if Ra == Rb PC <= PC + OFFSET)
 LD	R0, Ra			(Ra <= MEM(IMM))
 ST	R0, Ra			(MEM(Ra) <= R0)
 HALT				
@@ -19,4 +19,3 @@ r0-r10	general purpose registers
 zero 	register holds a literal value of zero
 h0-h3	host written registers (h0 contains width, h1 contains mem location of C,
 				h2 contains mem location of B, h3 contains mem location A)
-
