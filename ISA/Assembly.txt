@@ -27,20 +27,24 @@ SHADD	r8, zero, h0, $9	// initialize r8, which holds size of a row of tiles in A
 SUBI	r9, $8, r2		// calculates the address of the current tile for A
 ADDI	r10, r9, zero
 ADDI	r4, h2, zero
-BGT	r10, zero, $4
+ADDI	r7, zero, $4
+BGT	r10, zero, r7
 ADD	r4, r4, r8
 SUBI	r10, r10, $-1
-BGT	r10, zero, $-2
+ADDI	r7, zero, $-3
+BGT	r10, zero, r7
 SUBI	r9, $8, r1
 SHADD	r4, r4, r9, $9
 
 SUBI	r9, $8, r0		// calculates the address of the current tile for B
 ADDI	r10, r9, zero
 ADDI	r5, h3, zero
-BGT	r10, zero, $4
+ADDI	r7, zero, $4
+BGT	r10, zero, r7
 ADD	r5, r5, r8
 SUBI	r10, r10, $-1
-BGT	r10, zero, $-2
+ADDI	r7, zero, $-3
+BGT	r10, zero, r7
 SUBI	r9, $8, r2
 SHADD	r5, r5, r9, $9
 
@@ -81,5 +85,7 @@ WRITEC	r3, 1'b1, $6
 WRITEC	r3, 1'b0, $7
 WRITEC	r3, 1'b1, $7
 
-JNZDEC	r1, $-77		// conditional jump and decrements for outer loops
-JNZDEC	r0, $-80
+ADDI	r7, zero, $-83
+JNZDEC	r1, r7			// conditional jump and decrements for outer loops
+ADDI	r7, zero, $-87
+JNZDEC	r0, r7
