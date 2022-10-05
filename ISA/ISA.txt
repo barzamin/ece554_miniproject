@@ -4,7 +4,7 @@ WRITEC	Ra, CLO, CROW		(write to cache value of C, CLO high when writing low bits
 SENDA	Ra, AROW		(write to matmul memA the value in Ra to row specified by literal, Ra <= Ra + 8)
 SENDB	Ra			(write to matmul module memB value in Ra, Ra <= Ra + 8)
 JNZDEC	Ra, R0	 		(PC <= PC + R0 if Ra is not equal to Zero then if Ra is not equal to zero Ra <= Ra - 1)
-SHADD	R0, Ra, Rb, SHIFT	(R0 <= Ra + Rb < SHIFT)
+SHADD	Ra, Rb, SHIFT	        (Ra <= Ra + Rb < SHIFT)
 LSHIFT	R0, Ra, Rb		(R0 <= Rb < Rb)
 SUBI	Ra, Rb, IMM		(Ra <= Rb - IMM)
 ADD	R0, Ra, Rb		(R0 <= Ra + Rb)
